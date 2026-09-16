@@ -11,6 +11,54 @@ st.set_page_config(
     layout="wide"
 )
 
+# ==================== STYLE GLOBAL (COULEURS) ====================
+st.markdown("""
+<style>
+/* Bouton VERT (Ajouter) */
+div.stButton > button[kind="primary"] {
+    background-color: #34a853 !important;
+    color: white !important;
+    border: none !important;
+    font-weight: bold !important;
+}
+div.stButton > button[kind="primary"]:hover {
+    background-color: #1e7e34 !important;
+}
+
+/* Bouton BLEU (Modifier) */
+div.stButton > button[kind="secondary"] {
+    background-color: #1a73e8 !important;
+    color: white !important;
+    border: none !important;
+    font-weight: bold !important;
+}
+div.stButton > button[kind="secondary"]:hover {
+    background-color: #0d47a1 !important;
+}
+
+/* Bouton ROUGE (Supprimer) - classe custom */
+.btn-rouge div.stButton > button {
+    background-color: #d93025 !important;
+    color: white !important;
+    border: none !important;
+    font-weight: bold !important;
+}
+.btn-rouge div.stButton > button:hover {
+    background-color: #a50e0e !important;
+}
+
+.main-title { color: #1a73e8; font-size: 2.2rem; font-weight: bold; }
+.sub-title { color: #34a853; font-size: 1.4rem; font-weight: 600; }
+.card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    border-left: 6px solid #1a73e8;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+</style>
+""", unsafe_allow_html=True)
+
 # ==================== MOT DE PASSE D'ACCÈS GLOBAL ====================
 ACCESS_PASSWORD = "SantePredire2026"
 
@@ -23,7 +71,6 @@ if 'authenticated' not in st.session_state:
 
 # ==================== DONNÉES SIMULÉES ====================
 if 'patients' not in st.session_state:
-    # Génération de 200 patients simulés
     np.random.seed(42)
     types_maladie = ["Cardiovasculaire", "Diabète", "Respiratoire", "Infection"]
     st.session_state.patients = pd.DataFrame({
@@ -63,7 +110,7 @@ if not st.session_state.access_granted:
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         access_code = st.text_input("🔑 Mot de passe d'accès", type="password", placeholder="Entrez le mot de passe")
-        if st.button("🚪 Accéder à l'application", use_container_width=True):
+        if st.button("🚪 Accéder à l'application", use_container_width=True, type="primary"):
             if access_code == ACCESS_PASSWORD:
                 st.session_state.access_granted = True
                 st.rerun()
@@ -87,7 +134,7 @@ if not st.session_state.authenticated:
         password = st.text_input("🔑 Mot de passe", type="password", placeholder="Entrez votre mot de passe")
         role = st.selectbox("🎯 Rôle", ["Médecin", "Administrateur"])
         
-        if st.button("🚪 Se connecter", use_container_width=True):
+        if st.button("🚪 Se connecter", use_container_width=True, type="primary"):
             if username == "medecin" and password == "medecin123" and role == "Médecin":
                 st.session_state.authenticated = True
                 st.session_state.role = "Médecin"
@@ -175,7 +222,6 @@ elif menu == "📊 Tableau de bord":
     
     df = st.session_state.patients
     
-    # KPI
     col1, col2, col3, col4 = st.columns(4)
     with col1:
         st.metric("👤 Patients", len(df))
@@ -188,7 +234,6 @@ elif menu == "📊 Tableau de bord":
     
     st.markdown("---")
     
-    # Graphiques
     col1, col2 = st.columns(2)
     with col1:
         fig = px.pie(df, names='Type maladie', title='Répartition des types de maladies',
@@ -203,7 +248,6 @@ elif menu == "📊 Tableau de bord":
                      barmode='group')
         st.plotly_chart(fig, use_container_width=True)
     
-    # Évolution des requêtes
     st.subheader("📈 Évolution des requêtes par heure")
     heures = ["00h", "02h", "04h", "06h", "08h", "10h", "12h", "14h", "16h", "18h", "20h", "22h"]
     valeurs = [5, 3, 2, 1, 8, 15, 22, 30, 25, 20, 12, 8]
@@ -246,15 +290,17 @@ elif menu == "🤖 Aide à la décision":
 
 # ==================== PAGE GESTION DES MÉDECINS ====================
 elif menu == "👨‍⚕️ Gestion des médecins":
-    st.title("👨‍⚕️ Gestion des médecins")
+    st.markdown('<p class="main-title">👨‍⚕️ Gestion des médecins</p>', unsafe_allow_html=True)
     
-    st.subheader("📋 Liste des médecins")
+    st.markdown('<p class="sub-title">📋 Liste des médecins</p>', unsafe_allow_html=True)
     st.dataframe(st.session_state.medecins, use_container_width=True)
     
     st.markdown("---")
     
-    # Ajouter un médecin
-    with st.expander("➕ Ajouter un médecin", expanded=False):
+    tab1, tab2, tab3 = st.tabs(["➕ Ajouter (Vert)", "✏️ Modifier (Bleu)", "🗑️ Supprimer (Rouge)"])
+    
+    # ---------- AJOUTER (VERT) ----------
+    with tab1:
         col1, col2 = st.columns(2)
         with col1:
             nom = st.text_input("Nom", key="add_nom")
@@ -264,9 +310,9 @@ elif menu == "👨‍⚕️ Gestion des médecins":
             specialite = st.text_input("Spécialité", key="add_specialite")
             telephone = st.text_input("Téléphone", key="add_telephone")
         
-        if st.button("✅ Ajouter le médecin"):
+        if st.button("✅ Ajouter le médecin", use_container_width=True, type="primary", key="btn_add"):
             if nom and prenom and email:
-                new_id = len(st.session_state.medecins) + 1
+                new_id = int(st.session_state.medecins['ID'].max()) + 1 if len(st.session_state.medecins) > 0 else 1
                 new_medecin = pd.DataFrame({
                     'ID': [new_id], 'Nom': [nom], 'Prénom': [prenom],
                     'Email': [email], 'Spécialité': [specialite], 'Téléphone': [telephone]
@@ -277,14 +323,46 @@ elif menu == "👨‍⚕️ Gestion des médecins":
             else:
                 st.error("❌ Nom, Prénom et Email sont obligatoires")
     
-    # Supprimer un médecin
-    with st.expander("🗑️ Supprimer un médecin", expanded=False):
+    # ---------- MODIFIER (BLEU) ----------
+    with tab2:
         if len(st.session_state.medecins) > 0:
             medecin_options = st.session_state.medecins.apply(
                 lambda x: f"{x['Nom']} {x['Prénom']} (ID: {x['ID']})", axis=1
             ).tolist()
-            selected = st.selectbox("Choisir un médecin", medecin_options)
-            if st.button("🗑️ SUPPRIMER"):
+            selected = st.selectbox("Choisir un médecin à modifier", medecin_options, key="edit_select")
+            idx = medecin_options.index(selected)
+            med = st.session_state.medecins.iloc[idx]
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                new_nom = st.text_input("Nom", value=med['Nom'], key="edit_nom")
+                new_prenom = st.text_input("Prénom", value=med['Prénom'], key="edit_prenom")
+                new_email = st.text_input("Email", value=med['Email'], key="edit_email")
+            with col2:
+                new_specialite = st.text_input("Spécialité", value=med['Spécialité'], key="edit_specialite")
+                new_telephone = st.text_input("Téléphone", value=med['Téléphone'], key="edit_telephone")
+            
+            if st.button("💾 Enregistrer les modifications", use_container_width=True, key="btn_edit"):
+                st.session_state.medecins.at[idx, 'Nom'] = new_nom
+                st.session_state.medecins.at[idx, 'Prénom'] = new_prenom
+                st.session_state.medecins.at[idx, 'Email'] = new_email
+                st.session_state.medecins.at[idx, 'Spécialité'] = new_specialite
+                st.session_state.medecins.at[idx, 'Téléphone'] = new_telephone
+                st.success(f"✅ Médecin {new_nom} {new_prenom} modifié !")
+                st.rerun()
+        else:
+            st.info("Aucun médecin à modifier.")
+    
+    # ---------- SUPPRIMER (ROUGE) ----------
+    with tab3:
+        if len(st.session_state.medecins) > 0:
+            medecin_options = st.session_state.medecins.apply(
+                lambda x: f"{x['Nom']} {x['Prénom']} (ID: {x['ID']})", axis=1
+            ).tolist()
+            selected = st.selectbox("Choisir un médecin à supprimer", medecin_options, key="del_select")
+            
+            st.markdown('<div class="btn-rouge">', unsafe_allow_html=True)
+            if st.button("🗑️ SUPPRIMER", use_container_width=True, key="btn_del"):
                 idx = medecin_options.index(selected)
                 medecin_id = st.session_state.medecins.iloc[idx]['ID']
                 st.session_state.medecins = st.session_state.medecins[
@@ -292,6 +370,9 @@ elif menu == "👨‍⚕️ Gestion des médecins":
                 ].reset_index(drop=True)
                 st.success("✅ Médecin supprimé !")
                 st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
+        else:
+            st.info("Aucun médecin à supprimer.")
 
 # ==================== PAGE DOSSIERS MÉDICAUX ====================
 elif menu == "📋 Dossiers médicaux":
@@ -299,7 +380,6 @@ elif menu == "📋 Dossiers médicaux":
     
     df = st.session_state.patients
     
-    # Filtres
     col1, col2, col3 = st.columns(3)
     with col1:
         type_filter = st.selectbox("Type de maladie", ["Tous"] + df['Type maladie'].unique().tolist())
@@ -308,7 +388,6 @@ elif menu == "📋 Dossiers médicaux":
     with col3:
         search = st.text_input("🔍 Rechercher par ID")
     
-    # Filtrer
     filtered_df = df.copy()
     if type_filter != "Tous":
         filtered_df = filtered_df[filtered_df['Type maladie'] == type_filter]
@@ -320,7 +399,6 @@ elif menu == "📋 Dossiers médicaux":
     
     st.dataframe(filtered_df, use_container_width=True, height=500)
     
-    # Export
     csv = filtered_df.to_csv(index=False).encode('utf-8')
     st.download_button(
         label="📥 Télécharger (CSV)",
