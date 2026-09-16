@@ -86,7 +86,7 @@ div[data-testid="stForm"] button[kind="secondaryFormSubmit"]:hover {
     color: white !important;
 }
 
-/* ===== Labels EN GRAS (uniquement dans les formulaires d'auth) ===== */
+/* ===== Labels EN GRAS (formulaires auth) ===== */
 div[data-testid="stForm"] label {
     font-weight: bold !important;
     color: #000 !important;
@@ -142,7 +142,7 @@ div[data-baseweb="select"] button {
     border: none !important;
 }
 
-/* ===== Labels SIMPLES pour les champs de prédiction ===== */
+/* ===== Labels SIMPLES pour prédiction ===== */
 .stNumberInput > label,
 .stSelectbox > label {
     font-weight: normal !important;
@@ -274,12 +274,12 @@ st.sidebar.markdown("---")
 
 # ==================== MENU ====================
 if st.session_state.role == "Médecin":
-    menu = st.sidebar.radio("Navigation", ["⚕️ Prédiction", "🤖 Aide à la décision"])
+    menu = st.sidebar.radio("Navigation", ["⚕️ Prédiction", "Aide à la décision"])
 else:
     menu = st.sidebar.radio("Navigation", [
         "📊 Tableau de bord",
         "⚕️ Prédiction",
-        "🤖 Aide à la décision",
+        "Aide à la décision",
         "🥼 Gestion des médecins",
         "📋 Dossiers médicaux",
         "⚙️ Administration"
@@ -357,15 +357,38 @@ elif menu == "📊 Tableau de bord":
     col1, col2 = st.columns(2)
     with col1:
         fig = px.pie(df, names='Type maladie', title='Répartition des types de maladies',
-                     color_discrete_sequence=px.colors.qualitative.Set3)
-        st.plotly_chart(fig, use_container_width=True)
+                     color='Type maladie',
+                     color_discrete_map={
+                         "Cardiovasculaire": "#34a853",
+                         "Diabète": "#d93025",
+                         "Infection": "#1a73e8",
+                         "Respiratoire": "#001f3f"
+                     })
+        st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+    
     with col2:
-        risk_by_disease = df.groupby(['Type maladie', 'Risque']).size().reset_index(name='Count')
-        fig = px.bar(risk_by_disease, x='Type maladie', y='Count', color='Risque',
-                     title='Risque par type de maladie',
-                     color_discrete_map={0: '#34a853', 1: '#d93025'},
-                     barmode='group')
-        st.plotly_chart(fig, use_container_width=True)
+        disease_counts = df['Type maladie'].value_counts().reset_index()
+        disease_counts.columns = ['Type maladie', 'Count']
+        
+        color_map = {
+            "Cardiovasculaire": "#34a853",
+            "Diabète": "#d93025",
+            "Infection": "#1a73e8",
+            "Respiratoire": "#001f3f"
+        }
+        
+        fig = px.bar(
+            disease_counts,
+            x='Type maladie',
+            y='Count',
+            title='Répartition des maladies',
+            color='Type maladie',
+            color_discrete_map=color_map,
+            text='Count'
+        )
+        fig.update_traces(textposition='outside')
+        fig.update_layout(showlegend=False, xaxis_tickangle=-30)
+        st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
     
     st.subheader("📈 Évolution des requêtes par heure")
     heures = ["00h", "02h", "04h", "06h", "08h", "10h", "12h", "14h", "16h", "18h", "20h", "22h"]
@@ -373,11 +396,11 @@ elif menu == "📊 Tableau de bord":
     df_req = pd.DataFrame({"Heure": heures, "Requêtes": valeurs})
     fig = px.bar(df_req, x="Heure", y="Requêtes", title="Requêtes par heure",
                  color="Requêtes", color_continuous_scale="Blues", height=400)
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
 
 # ==================== PAGE Q&A RAG ====================
-elif menu == "🤖 Aide à la décision":
-    st.title("🤖 Aide à la décision (Q&A RAG)")
+elif menu == "Aide à la décision":
+    st.title("Aide à la décision (Q&A RAG)")
     question = st.text_area("💬 Posez votre question médicale", height=100,
                             placeholder="Ex: Combien de patients ont le diabète ?")
     
