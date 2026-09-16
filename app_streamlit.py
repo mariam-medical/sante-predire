@@ -142,8 +142,9 @@ div[data-baseweb="select"] button {
     border: none !important;
 }
 
-/* ===== Labels SIMPLES pour les number_input (page prédiction) ===== */
-.stNumberInput > label {
+/* ===== Labels SIMPLES pour les champs de prédiction ===== */
+.stNumberInput > label,
+.stSelectbox > label {
     font-weight: normal !important;
     color: #000 !important;
     font-size: 1rem !important;
@@ -297,14 +298,17 @@ if menu == "⚕️ Prédiction":
     st.title("⚕️ Prédiction de risque médical")
     st.subheader("Saisie du patient")
     
-    age = st.number_input("Âge", min_value=0, max_value=120, value=50, step=1)
-    sexe = st.number_input("Sexe (0 = F, 1 = M)", min_value=0, max_value=1, value=0, step=1)
-    imc = st.number_input("IMC", min_value=10.0, max_value=50.0, value=25.0, step=0.1)
-    tension = st.number_input("Tension", min_value=80, max_value=220, value=130, step=1)
-    diabete = st.number_input("Diabète (0/1)", min_value=0, max_value=1, value=0, step=1)
-    fumeur = st.number_input("Fumeur (0/1)", min_value=0, max_value=1, value=0, step=1)
-    hospitalisations = st.number_input("Hospitalisations", min_value=0, max_value=20, value=0, step=1)
-    duree_sejour = st.number_input("Durée séjour", min_value=1, max_value=30, value=5, step=1)
+    col1, col2 = st.columns(2)
+    with col1:
+        age = st.number_input("Âge", min_value=0, max_value=120, value=50, step=1)
+        sexe = st.selectbox("Sexe", ["Féminin", "Masculin"])
+        imc = st.number_input("IMC", min_value=10.0, max_value=50.0, value=25.0, step=0.1)
+        tension = st.number_input("Tension (mmHg)", min_value=80, max_value=220, value=130, step=1)
+    with col2:
+        diabete = st.selectbox("Diabète", ["Non", "Oui"])
+        fumeur = st.selectbox("Fumeur", ["Non", "Oui"])
+        hospitalisations = st.number_input("Hospitalisations", min_value=0, max_value=20, value=0, step=1)
+        duree_sejour = st.number_input("Durée séjour", min_value=1, max_value=30, value=5, step=1)
     
     st.markdown("<br>", unsafe_allow_html=True)
     
