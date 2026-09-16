@@ -71,6 +71,73 @@ section[data-testid="stSidebar"] div.stButton > button:hover {
 /* ===== Titres ===== */
 .main-title { color: #1a73e8; font-size: 2.2rem; font-weight: bold; }
 .sub-title { color: #34a853; font-size: 1.4rem; font-weight: 600; }
+
+/* ===== PAGE ACCÈS + CONNEXION ===== */
+.auth-cross {
+    text-align: center;
+    font-size: 90px;
+    color: #d93025;
+    margin: 30px 0 10px 0;
+    font-weight: bold;
+    line-height: 1;
+}
+.auth-title {
+    text-align: center;
+    color: #1a73e8;
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+.auth-sub {
+    text-align: center;
+    color: #666;
+    margin-bottom: 30px;
+}
+.auth-card {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 25px;
+    max-width: 500px;
+    margin: 0 auto;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+/* Labels EN GRAS */
+.auth-card label,
+.auth-card .stTextInput label,
+.auth-card .stSelectbox label {
+    font-weight: bold !important;
+    color: #333 !important;
+    font-size: 1rem !important;
+}
+/* Champs bordure noire */
+.auth-card input[type="text"],
+.auth-card input[type="password"] {
+    border: 2px solid #000 !important;
+    border-radius: 4px !important;
+    padding: 10px !important;
+}
+.auth-card div[data-baseweb="select"] > div {
+    border: 2px solid #000 !important;
+    border-radius: 4px !important;
+}
+/* Bouton BLEU pleine largeur */
+.auth-card div.stButton > button,
+.auth-card div.stButton > button:focus,
+.auth-card div.stButton > button:active {
+    background-color: #1a73e8 !important;
+    color: white !important;
+    border: none !important;
+    font-weight: bold !important;
+    font-size: 1.1rem !important;
+    padding: 12px !important;
+    width: 100% !important;
+    border-radius: 4px !important;
+}
+.auth-card div.stButton > button:hover {
+    background-color: #0d47a1 !important;
+    color: white !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -114,45 +181,11 @@ if 'medecins' not in st.session_state:
 
 # ==================== 1ère BARRIÈRE : ACCÈS AU SITE ====================
 if not st.session_state.access_granted:
-    st.markdown("""
-    <style>
-    .access-cross { text-align: center; font-size: 90px; color: #d93025; margin: 30px 0 10px 0; font-weight: bold; }
-    .access-title { text-align: center; color: #1a73e8; font-size: 2rem; font-weight: bold; }
-    .access-sub { text-align: center; color: #666; margin-bottom: 30px; }
-    .access-card {
-        background: white;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-        padding: 25px;
-        max-width: 500px;
-        margin: 0 auto;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-    }
-    .access-card label { font-weight: bold !important; color: #333 !important; }
-    .access-card input[type="password"] {
-        border: 2px solid #000 !important;
-        border-radius: 4px !important;
-        padding: 10px !important;
-    }
-    .access-card div.stButton > button {
-        background-color: #1a73e8 !important;
-        color: white !important;
-        border: none !important;
-        font-weight: bold !important;
-        font-size: 1.1rem !important;
-        padding: 12px !important;
-        width: 100% !important;
-        border-radius: 4px !important;
-    }
-    .access-card div.stButton > button:hover { background-color: #0d47a1 !important; }
-    </style>
-    """, unsafe_allow_html=True)
+    st.markdown('<div class="auth-cross">🔐</div>', unsafe_allow_html=True)
+    st.markdown('<div class="auth-title">Accès Sécurisé</div>', unsafe_allow_html=True)
+    st.markdown('<div class="auth-sub">Cette application est protégée. Entrez le mot de passe d\'accès.</div>', unsafe_allow_html=True)
     
-    st.markdown('<div class="access-cross">🔐</div>', unsafe_allow_html=True)
-    st.markdown('<div class="access-title">Accès Sécurisé</div>', unsafe_allow_html=True)
-    st.markdown('<div class="access-sub">Cette application est protégée. Entrez le mot de passe d\'accès.</div>', unsafe_allow_html=True)
-    
-    st.markdown('<div class="access-card">', unsafe_allow_html=True)
+    st.markdown('<div class="auth-card">', unsafe_allow_html=True)
     access_code = st.text_input("Mot de passe d'accès", type="password", key="access_pwd")
     if st.button("Accéder à l'application", use_container_width=True, key="btn_access"):
         if access_code == ACCESS_PASSWORD:
@@ -165,49 +198,11 @@ if not st.session_state.access_granted:
 
 # ==================== 2ème BARRIÈRE : CONNEXION ====================
 if not st.session_state.authenticated:
-    st.markdown("""
-    <style>
-    .login-cross { text-align: center; font-size: 90px; color: #d93025; margin: 30px 0 10px 0; font-weight: bold; }
-    .login-title { text-align: center; color: #1a73e8; font-size: 2rem; font-weight: bold; }
-    .login-sub { text-align: center; color: #666; margin-bottom: 30px; }
-    .login-card {
-        background: white;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-        padding: 25px;
-        max-width: 500px;
-        margin: 0 auto;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-    }
-    .login-card label { font-weight: bold !important; color: #333 !important; font-size: 1rem !important; }
-    .login-card input[type="text"], .login-card input[type="password"] {
-        border: 2px solid #000 !important;
-        border-radius: 4px !important;
-        padding: 10px !important;
-    }
-    .login-card div[data-baseweb="select"] > div {
-        border: 2px solid #000 !important;
-        border-radius: 4px !important;
-    }
-    .login-card div.stButton > button {
-        background-color: #1a73e8 !important;
-        color: white !important;
-        border: none !important;
-        font-weight: bold !important;
-        font-size: 1.1rem !important;
-        padding: 12px !important;
-        width: 100% !important;
-        border-radius: 4px !important;
-    }
-    .login-card div.stButton > button:hover { background-color: #0d47a1 !important; }
-    </style>
-    """, unsafe_allow_html=True)
+    st.markdown('<div class="auth-cross">✚</div>', unsafe_allow_html=True)
+    st.markdown('<div class="auth-title">Système Médical Intelligent</div>', unsafe_allow_html=True)
+    st.markdown('<div class="auth-sub">Connectez-vous avec vos identifiants</div>', unsafe_allow_html=True)
     
-    st.markdown('<div class="login-cross">✚</div>', unsafe_allow_html=True)
-    st.markdown('<div class="login-title">Système Médical Intelligent</div>', unsafe_allow_html=True)
-    st.markdown('<div class="login-sub">Connectez-vous avec vos identifiants</div>', unsafe_allow_html=True)
-    
-    st.markdown('<div class="login-card">', unsafe_allow_html=True)
+    st.markdown('<div class="auth-card">', unsafe_allow_html=True)
     username = st.text_input("Identifiant", placeholder="", key="login_user")
     password = st.text_input("Mot de passe", type="password", placeholder="", key="login_pass")
     role = st.selectbox("Rôle", ["Médecin", "Administrateur"], key="login_role")
