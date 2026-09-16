@@ -11,10 +11,22 @@ st.set_page_config(
     layout="wide"
 )
 
-# ==================== STYLE GLOBAL (COULEURS) ====================
+# ==================== STYLE GLOBAL ====================
 st.markdown("""
 <style>
-/* Bouton VERT (Ajouter) */
+/* Bouton Déconnexion en ROUGE (sidebar) */
+section[data-testid="stSidebar"] div.stButton > button {
+    background-color: #d93025 !important;
+    color: white !important;
+    border: none !important;
+    font-weight: bold !important;
+}
+section[data-testid="stSidebar"] div.stButton > button:hover {
+    background-color: #a50e0e !important;
+    color: white !important;
+}
+
+/* Bouton PRIMARY (vert) */
 div.stButton > button[kind="primary"] {
     background-color: #34a853 !important;
     color: white !important;
@@ -25,7 +37,7 @@ div.stButton > button[kind="primary"]:hover {
     background-color: #1e7e34 !important;
 }
 
-/* Bouton BLEU (Modifier) */
+/* Bouton SECONDARY (bleu) */
 div.stButton > button[kind="secondary"] {
     background-color: #1a73e8 !important;
     color: white !important;
@@ -36,7 +48,7 @@ div.stButton > button[kind="secondary"]:hover {
     background-color: #0d47a1 !important;
 }
 
-/* Bouton ROUGE (Supprimer) - classe custom */
+/* Bouton ROUGE custom */
 .btn-rouge div.stButton > button {
     background-color: #d93025 !important;
     color: white !important;
@@ -49,12 +61,45 @@ div.stButton > button[kind="secondary"]:hover {
 
 .main-title { color: #1a73e8; font-size: 2.2rem; font-weight: bold; }
 .sub-title { color: #34a853; font-size: 1.4rem; font-weight: 600; }
-.card {
-    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-    border-left: 6px solid #1a73e8;
-    padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 10px;
+
+/* Radio buttons stylisés en gros boutons colorés */
+div[role="radiogroup"] {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 25px;
+}
+div[role="radiogroup"] > label {
+    flex: 1;
+    padding: 14px 20px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: bold;
+    color: white !important;
+    cursor: pointer;
+    border: none;
+    transition: 0.2s;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+div[role="radiogroup"] > label:nth-child(1) {
+    background-color: #34a853;
+}
+div[role="radiogroup"] > label:nth-child(2) {
+    background-color: #1a73e8;
+}
+div[role="radiogroup"] > label:nth-child(3) {
+    background-color: #d93025;
+}
+div[role="radiogroup"] > label:hover {
+    opacity: 0.88;
+    transform: translateY(-2px);
+}
+div[role="radiogroup"] > label p {
+    color: white !important;
+    font-size: 1.05rem;
+    font-weight: bold;
+}
+div[role="radiogroup"] > label > div:first-child {
+    display: none;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -165,9 +210,9 @@ else:
         "⚙️ Administration"
     ])
 
-# Déconnexion
+# Déconnexion (ROUGE via CSS sidebar)
 st.sidebar.markdown("---")
-if st.sidebar.button("🚪 Déconnexion", use_container_width=True):
+if st.sidebar.button("🚪 Déconnexion", use_container_width=True, key="btn_logout"):
     st.session_state.authenticated = False
     st.session_state.access_granted = False
     st.session_state.role = None
@@ -297,10 +342,17 @@ elif menu == "👨‍⚕️ Gestion des médecins":
     
     st.markdown("---")
     
-    tab1, tab2, tab3 = st.tabs(["➕ Ajouter (Vert)", "✏️ Modifier (Bleu)", "🗑️ Supprimer (Rouge)"])
+    # ===== MENU COLORÉ (boutons radio stylisés) =====
+    choix = st.radio(
+        "Action",
+        ["➕ Ajouter", "✏️ Modifier", "🗑️ Supprimer"],
+        horizontal=True,
+        label_visibility="collapsed",
+        key="medecin_action"
+    )
     
     # ---------- AJOUTER (VERT) ----------
-    with tab1:
+    if choix == "➕ Ajouter":
         col1, col2 = st.columns(2)
         with col1:
             nom = st.text_input("Nom", key="add_nom")
@@ -324,7 +376,7 @@ elif menu == "👨‍⚕️ Gestion des médecins":
                 st.error("❌ Nom, Prénom et Email sont obligatoires")
     
     # ---------- MODIFIER (BLEU) ----------
-    with tab2:
+    elif choix == "✏️ Modifier":
         if len(st.session_state.medecins) > 0:
             medecin_options = st.session_state.medecins.apply(
                 lambda x: f"{x['Nom']} {x['Prénom']} (ID: {x['ID']})", axis=1
@@ -354,7 +406,7 @@ elif menu == "👨‍⚕️ Gestion des médecins":
             st.info("Aucun médecin à modifier.")
     
     # ---------- SUPPRIMER (ROUGE) ----------
-    with tab3:
+    elif choix == "🗑️ Supprimer":
         if len(st.session_state.medecins) > 0:
             medecin_options = st.session_state.medecins.apply(
                 lambda x: f"{x['Nom']} {x['Prénom']} (ID: {x['ID']})", axis=1
