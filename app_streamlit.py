@@ -74,11 +74,17 @@ div[data-testid="stForm"] button[kind="secondaryFormSubmit"]:hover {
     color: white !important;
 }
 
-/* ===== Labels EN GRAS dans les formulaires ===== */
-div[data-testid="stForm"] label {
+/* ===== Labels EN GRAS (TOUS les champs) ===== */
+div[data-testid="stForm"] label,
+div[data-testid="stTextInput"] label,
+div[data-testid="stSelectbox"] label,
+.stTextInput > label,
+.stSelectbox > label,
+.stNumberInput > label,
+.stTextArea > label {
     font-weight: bold !important;
-    color: #333 !important;
-    font-size: 1rem !important;
+    color: #000 !important;
+    font-size: 1.05rem !important;
 }
 
 /* ===== Titres ===== */
@@ -147,16 +153,15 @@ if 'medecins' not in st.session_state:
     })
 
 # ==================== LECTURE DES PARAMÈTRES D'URL ====================
-# Pour que les boutons HTML fonctionnent sans perdre la session
 query_action = st.query_params.get("action", None)
 if query_action:
     st.session_state.medecin_action = query_action
 
-# ==================== 1ère BARRIÈRE : ACCÈS AU SITE ====================
+# ==================== 1ère BARRIÈRE : ACCÈS AU SITE (CLÉ ARGENT) ====================
 if not st.session_state.access_granted:
     st.markdown('''
     <div class="auth-icon">
-    <svg width="90" height="90" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <svg width="100" height="100" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <defs>
             <linearGradient id="silverGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" style="stop-color:#F0F0F0;stop-opacity:1" />
@@ -188,22 +193,13 @@ if not st.session_state.access_granted:
                 st.error("❌ Mot de passe d'accès incorrect")
     st.stop()
 
-# ==================== 2ème BARRIÈRE : CONNEXION ====================
+# ==================== 2ème BARRIÈRE : CONNEXION (CROIX ROUGE) ====================
 if not st.session_state.authenticated:
     st.markdown('''
     <div class="auth-icon">
-    <svg width="90" height="90" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-            <linearGradient id="silverGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:#F0F0F0;stop-opacity:1" />
-                <stop offset="50%" style="stop-color:#C0C0C0;stop-opacity:1" />
-                <stop offset="100%" style="stop-color:#909090;stop-opacity:1" />
-            </linearGradient>
-        </defs>
-        <path d="M12.65 10C11.83 7.67 9.61 6 7 6C3.69 6 1 8.69 1 12C1 15.31 3.69 18 7 18C9.61 18 11.83 16.33 12.65 14H17V17H20V14H21V12H12.65ZM7 15C5.35 15 4 13.65 4 12C4 10.35 5.35 9 7 9C8.65 9 10 10.35 10 12C10 13.65 8.65 15 7 15Z" 
-              fill="url(#silverGrad2)" 
-              stroke="#707070" 
-              stroke-width="0.7"/>
+    <svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <rect x="40" y="10" width="20" height="80" fill="#d93025" rx="3"/>
+        <rect x="10" y="40" width="80" height="20" fill="#d93025" rx="3"/>
     </svg>
     </div>
     ''', unsafe_allow_html=True)
@@ -375,7 +371,7 @@ elif menu == "👨‍⚕️ Gestion des médecins":
     
     st.markdown("---")
     
-    # ===== BOUTONS HTML COLORÉS (garantis à 100%) =====
+    # ===== BOUTONS HTML COLORÉS =====
     st.markdown("""
     <div class="btn-group">
         <a href="?action=ajouter" target="_self" class="btn-ajouter">➕ Ajouter</a>
