@@ -14,8 +14,8 @@ st.set_page_config(
 # ==================== STYLE GLOBAL ====================
 st.markdown("""
 <style>
-/* ===== BOUTONS COLORÉS (Ajouter/Modifier/Supprimer) ===== */
-.btn-vert div.stButton > button {
+/* ===== BOUTONS COLORÉS (ciblés par position de colonne) ===== */
+div[data-testid="column"]:nth-of-type(1) div.stButton > button {
     background-color: #34a853 !important;
     color: white !important;
     border: 2px solid #000 !important;
@@ -24,11 +24,11 @@ st.markdown("""
     padding: 12px !important;
     border-radius: 6px !important;
 }
-.btn-vert div.stButton > button:hover {
+div[data-testid="column"]:nth-of-type(1) div.stButton > button:hover {
     background-color: #1e7e34 !important;
     color: white !important;
 }
-.btn-bleu div.stButton > button {
+div[data-testid="column"]:nth-of-type(2) div.stButton > button {
     background-color: #1a73e8 !important;
     color: white !important;
     border: 2px solid #000 !important;
@@ -37,11 +37,11 @@ st.markdown("""
     padding: 12px !important;
     border-radius: 6px !important;
 }
-.btn-bleu div.stButton > button:hover {
+div[data-testid="column"]:nth-of-type(2) div.stButton > button:hover {
     background-color: #0d47a1 !important;
     color: white !important;
 }
-.btn-rouge div.stButton > button {
+div[data-testid="column"]:nth-of-type(3) div.stButton > button {
     background-color: #d93025 !important;
     color: white !important;
     border: 2px solid #000 !important;
@@ -50,7 +50,7 @@ st.markdown("""
     padding: 12px !important;
     border-radius: 6px !important;
 }
-.btn-rouge div.stButton > button:hover {
+div[data-testid="column"]:nth-of-type(3) div.stButton > button:hover {
     background-color: #a50e0e !important;
     color: white !important;
 }
@@ -68,8 +68,7 @@ section[data-testid="stSidebar"] div.stButton > button:hover {
     color: white !important;
 }
 
-/* ===== Bouton PRIMARY (Se connecter / Accéder) EN BLEU ===== */
-div[data-testid="stForm"] div.stButton > button,
+/* ===== Bouton "Se connecter" / "Accéder" EN BLEU ===== */
 div[data-testid="stForm"] button[kind="primaryFormSubmit"],
 div[data-testid="stForm"] button[kind="secondaryFormSubmit"] {
     background-color: #1a73e8 !important;
@@ -81,8 +80,8 @@ div[data-testid="stForm"] button[kind="secondaryFormSubmit"] {
     border-radius: 4px !important;
     width: 100% !important;
 }
-div[data-testid="stForm"] div.stButton > button:hover,
-div[data-testid="stForm"] button[kind="primaryFormSubmit"]:hover {
+div[data-testid="stForm"] button[kind="primaryFormSubmit"]:hover,
+div[data-testid="stForm"] button[kind="secondaryFormSubmit"]:hover {
     background-color: #0d47a1 !important;
     color: white !important;
 }
@@ -94,28 +93,14 @@ div[data-testid="stForm"] label {
     font-size: 1rem !important;
 }
 
-/* ===== Champs bordure noire dans les formulaires ===== */
-div[data-testid="stForm"] input[type="text"],
-div[data-testid="stForm"] input[type="password"] {
-    border: 2px solid #000 !important;
-    border-radius: 4px !important;
-}
-div[data-testid="stForm"] div[data-baseweb="select"] > div {
-    border: 2px solid #000 !important;
-    border-radius: 4px !important;
-}
-
 /* ===== Titres ===== */
 .main-title { color: #1a73e8; font-size: 2.2rem; font-weight: bold; }
 .sub-title { color: #34a853; font-size: 1.4rem; font-weight: 600; }
 
 /* ===== Style des pages auth ===== */
-.auth-cross {
+.auth-icon {
     text-align: center;
-    font-size: 90px;
-    color: #d93025;
     margin: 30px 0 10px 0;
-    font-weight: bold;
     line-height: 1;
 }
 .auth-title {
@@ -173,7 +158,23 @@ if 'medecins' not in st.session_state:
 
 # ==================== 1ère BARRIÈRE : ACCÈS AU SITE ====================
 if not st.session_state.access_granted:
-    st.markdown('<div class="auth-cross">🔐</div>', unsafe_allow_html=True)
+    st.markdown('''
+    <div class="auth-icon">
+    <svg width="90" height="90" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <linearGradient id="silverGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#F0F0F0;stop-opacity:1" />
+                <stop offset="50%" style="stop-color:#C0C0C0;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#909090;stop-opacity:1" />
+            </linearGradient>
+        </defs>
+        <path d="M12.65 10C11.83 7.67 9.61 6 7 6C3.69 6 1 8.69 1 12C1 15.31 3.69 18 7 18C9.61 18 11.83 16.33 12.65 14H17V17H20V14H21V12H12.65ZM7 15C5.35 15 4 13.65 4 12C4 10.35 5.35 9 7 9C8.65 9 10 10.35 10 12C10 13.65 8.65 15 7 15Z" 
+              fill="url(#silverGrad1)" 
+              stroke="#707070" 
+              stroke-width="0.7"/>
+    </svg>
+    </div>
+    ''', unsafe_allow_html=True)
     st.markdown('<div class="auth-title">Accès Sécurisé</div>', unsafe_allow_html=True)
     st.markdown('<div class="auth-sub">Cette application est protégée. Entrez le mot de passe d\'accès.</div>', unsafe_allow_html=True)
     
@@ -193,7 +194,23 @@ if not st.session_state.access_granted:
 
 # ==================== 2ème BARRIÈRE : CONNEXION ====================
 if not st.session_state.authenticated:
-    st.markdown('<div class="auth-cross">✚</div>', unsafe_allow_html=True)
+    st.markdown('''
+    <div class="auth-icon">
+    <svg width="90" height="90" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <linearGradient id="silverGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#F0F0F0;stop-opacity:1" />
+                <stop offset="50%" style="stop-color:#C0C0C0;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#909090;stop-opacity:1" />
+            </linearGradient>
+        </defs>
+        <path d="M12.65 10C11.83 7.67 9.61 6 7 6C3.69 6 1 8.69 1 12C1 15.31 3.69 18 7 18C9.61 18 11.83 16.33 12.65 14H17V17H20V14H21V12H12.65ZM7 15C5.35 15 4 13.65 4 12C4 10.35 5.35 9 7 9C8.65 9 10 10.35 10 12C10 13.65 8.65 15 7 15Z" 
+              fill="url(#silverGrad2)" 
+              stroke="#707070" 
+              stroke-width="0.7"/>
+    </svg>
+    </div>
+    ''', unsafe_allow_html=True)
     st.markdown('<div class="auth-title">Système Médical Intelligent</div>', unsafe_allow_html=True)
     st.markdown('<div class="auth-sub">Connectez-vous avec vos identifiants</div>', unsafe_allow_html=True)
     
@@ -368,23 +385,17 @@ elif menu == "👨‍⚕️ Gestion des médecins":
     # ===== 3 BOUTONS COLORÉS CÔTE À CÔTE =====
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.markdown('<div class="btn-vert">', unsafe_allow_html=True)
         if st.button("➕ Ajouter", use_container_width=True, key="tab_add"):
             st.session_state.medecin_action = "ajouter"
             st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
     with col2:
-        st.markdown('<div class="btn-bleu">', unsafe_allow_html=True)
         if st.button("✏️ Modifier", use_container_width=True, key="tab_edit"):
             st.session_state.medecin_action = "modifier"
             st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
     with col3:
-        st.markdown('<div class="btn-rouge">', unsafe_allow_html=True)
         if st.button("🗑️ Supprimer", use_container_width=True, key="tab_del"):
             st.session_state.medecin_action = "supprimer"
             st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
     
     st.markdown("---")
     
@@ -402,8 +413,7 @@ elif menu == "👨‍⚕️ Gestion des médecins":
             specialite = st.text_input("Spécialité", key="add_specialite")
             telephone = st.text_input("Téléphone", key="add_telephone")
         
-        st.markdown('<div class="btn-vert">', unsafe_allow_html=True)
-        if st.button("✅ Ajouter le médecin", use_container_width=True, key="btn_add"):
+        if st.button("✅ Ajouter le médecin", use_container_width=True, key="btn_add", type="primary"):
             if nom and prenom and email:
                 new_id = int(st.session_state.medecins['ID'].max()) + 1 if len(st.session_state.medecins) > 0 else 1
                 new_medecin = pd.DataFrame({
@@ -415,7 +425,6 @@ elif menu == "👨‍⚕️ Gestion des médecins":
                 st.rerun()
             else:
                 st.error("❌ Nom, Prénom et Email sont obligatoires")
-        st.markdown('</div>', unsafe_allow_html=True)
     
     # ---------- FORMULAIRE MODIFIER ----------
     elif action == "modifier":
@@ -437,7 +446,6 @@ elif menu == "👨‍⚕️ Gestion des médecins":
                 new_specialite = st.text_input("Spécialité", value=med['Spécialité'], key="edit_specialite")
                 new_telephone = st.text_input("Téléphone", value=med['Téléphone'], key="edit_telephone")
             
-            st.markdown('<div class="btn-bleu">', unsafe_allow_html=True)
             if st.button("💾 Enregistrer les modifications", use_container_width=True, key="btn_edit"):
                 st.session_state.medecins.at[idx, 'Nom'] = new_nom
                 st.session_state.medecins.at[idx, 'Prénom'] = new_prenom
@@ -446,7 +454,6 @@ elif menu == "👨‍⚕️ Gestion des médecins":
                 st.session_state.medecins.at[idx, 'Téléphone'] = new_telephone
                 st.success(f"✅ Médecin {new_nom} {new_prenom} modifié !")
                 st.rerun()
-            st.markdown('</div>', unsafe_allow_html=True)
         else:
             st.info("Aucun médecin à modifier.")
     
@@ -459,7 +466,6 @@ elif menu == "👨‍⚕️ Gestion des médecins":
             ).tolist()
             selected = st.selectbox("Choisir un médecin à supprimer", medecin_options, key="del_select")
             
-            st.markdown('<div class="btn-rouge">', unsafe_allow_html=True)
             if st.button("🗑️ SUPPRIMER", use_container_width=True, key="btn_del"):
                 idx = medecin_options.index(selected)
                 medecin_id = st.session_state.medecins.iloc[idx]['ID']
@@ -468,7 +474,6 @@ elif menu == "👨‍⚕️ Gestion des médecins":
                 ].reset_index(drop=True)
                 st.success("✅ Médecin supprimé !")
                 st.rerun()
-            st.markdown('</div>', unsafe_allow_html=True)
         else:
             st.info("Aucun médecin à supprimer.")
 
