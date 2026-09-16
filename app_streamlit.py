@@ -12,7 +12,6 @@ st.set_page_config(
 )
 
 # ==================== MOT DE PASSE D'ACCÈS GLOBAL ====================
-# ⚠️ CHANGE CE MOT DE PASSE AVANT LE DÉPLOIEMENT SI BESOIN
 ACCESS_PASSWORD = "SantePredire2026"
 
 # ==================== INITIALISATION ====================
@@ -21,6 +20,35 @@ if 'access_granted' not in st.session_state:
 if 'authenticated' not in st.session_state:
     st.session_state.authenticated = False
     st.session_state.role = None
+
+# ==================== DONNÉES SIMULÉES ====================
+if 'patients' not in st.session_state:
+    # Génération de 200 patients simulés
+    np.random.seed(42)
+    types_maladie = ["Cardiovasculaire", "Diabète", "Respiratoire", "Infection"]
+    st.session_state.patients = pd.DataFrame({
+        'ID': range(1, 201),
+        'Âge': np.random.randint(18, 80, 200),
+        'Sexe': np.random.choice(['F', 'M'], 200),
+        'IMC': np.round(np.random.uniform(17, 40, 200), 1),
+        'Tension': np.random.randint(100, 180, 200),
+        'Diabète': np.random.choice([0, 1], 200),
+        'Fumeur': np.random.choice([0, 1], 200),
+        'Hospitalisations': np.random.randint(0, 6, 200),
+        'Durée séjour': np.random.randint(1, 10, 200),
+        'Type maladie': np.random.choice(types_maladie, 200),
+        'Risque': np.random.choice([0, 1], 200, p=[0.3, 0.7])
+    })
+
+if 'medecins' not in st.session_state:
+    st.session_state.medecins = pd.DataFrame({
+        'ID': [1, 2],
+        'Nom': ['Dupont', 'Martin'],
+        'Prénom': ['Jean', 'Sophie'],
+        'Email': ['jean.dupont@hopital.fr', 'sophie.martin@hopital.fr'],
+        'Spécialité': ['Cardiologie', 'Pédiatrie'],
+        'Téléphone': ['0102030405', '0607080910']
+    })
 
 # ==================== 1ère BARRIÈRE : ACCÈS AU SITE ====================
 if not st.session_state.access_granted:
@@ -35,7 +63,6 @@ if not st.session_state.access_granted:
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         access_code = st.text_input("🔑 Mot de passe d'accès", type="password", placeholder="Entrez le mot de passe")
-        
         if st.button("🚪 Accéder à l'application", use_container_width=True):
             if access_code == ACCESS_PASSWORD:
                 st.session_state.access_granted = True
@@ -76,15 +103,24 @@ if not st.session_state.authenticated:
 # ==================== APPLICATION PRINCIPALE ====================
 st.sidebar.markdown("## ☤ Système Médical")
 st.sidebar.markdown(f"👋 Connecté : **{st.session_state.role}**")
+st.sidebar.markdown("---")
 
-# Menu selon le rôle
+# ==================== MENU SELON LE RÔLE ====================
 if st.session_state.role == "Médecin":
-    menu = st.sidebar.radio("Navigation", ["🔍 Prédiction", "🤖 Q&A RAG"])
+    menu = st.sidebar.radio("Navigation", ["🔍 Prédiction", "🤖 Aide à la décision"])
 else:
-    menu = st.sidebar.radio("Navigation", ["📊 Tableau de bord", "🔍 Prédiction", "🤖 Q&A RAG", "⚙️ Administration"])
+    menu = st.sidebar.radio("Navigation", [
+        "📊 Tableau de bord",
+        "🔍 Prédiction",
+        "🤖 Aide à la décision",
+        "👨‍⚕️ Gestion des médecins",
+        "📋 Dossiers médicaux",
+        "⚙️ Administration"
+    ])
 
 # Déconnexion
-if st.sidebar.button("🚪 Déconnexion"):
+st.sidebar.markdown("---")
+if st.sidebar.button("🚪 Déconnexion", use_container_width=True):
     st.session_state.authenticated = False
     st.session_state.access_granted = False
     st.session_state.role = None
@@ -94,6 +130,7 @@ if st.sidebar.button("🚪 Déconnexion"):
 if menu == "🔍 Prédiction":
     st.title("🔍 Prédiction de risque médical")
     
+    st.subheader("📋 Saisie du patient")
     col1, col2 = st.columns(2)
     with col1:
         age = st.number_input("Âge", min_value=0, max_value=120, value=50, step=1)
@@ -136,16 +173,37 @@ if menu == "🔍 Prédiction":
 elif menu == "📊 Tableau de bord":
     st.title("📊 Tableau de bord")
     
+    df = st.session_state.patients
+    
+    # KPI
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        st.metric("👤 Patients", "200")
+        st.metric("👤 Patients", len(df))
     with col2:
-        st.metric("🩺 Types de maladies", "4")
+        st.metric("🩺 Types de maladies", df['Type maladie'].nunique())
     with col3:
-        st.metric("⚠️ Risque élevé", "145")
+        st.metric("⚠️ Risque élevé", int(df['Risque'].sum()))
     with col4:
-        st.metric("👨‍⚕️ Médecins", "0")
+        st.metric("👨‍⚕️ Médecins", len(st.session_state.medecins))
     
+    st.markdown("---")
+    
+    # Graphiques
+    col1, col2 = st.columns(2)
+    with col1:
+        fig = px.pie(df, names='Type maladie', title='Répartition des types de maladies',
+                     color_discrete_sequence=px.colors.qualitative.Set3)
+        st.plotly_chart(fig, use_container_width=True)
+    
+    with col2:
+        risk_by_disease = df.groupby(['Type maladie', 'Risque']).size().reset_index(name='Count')
+        fig = px.bar(risk_by_disease, x='Type maladie', y='Count', color='Risque',
+                     title='Risque par type de maladie',
+                     color_discrete_map={0: '#34a853', 1: '#d93025'},
+                     barmode='group')
+        st.plotly_chart(fig, use_container_width=True)
+    
+    # Évolution des requêtes
     st.subheader("📈 Évolution des requêtes par heure")
     heures = ["00h", "02h", "04h", "06h", "08h", "10h", "12h", "14h", "16h", "18h", "20h", "22h"]
     valeurs = [5, 3, 2, 1, 8, 15, 22, 30, 25, 20, 12, 8]
@@ -155,10 +213,11 @@ elif menu == "📊 Tableau de bord":
     st.plotly_chart(fig, use_container_width=True)
 
 # ==================== PAGE Q&A RAG ====================
-elif menu == "🤖 Q&A RAG":
+elif menu == "🤖 Aide à la décision":
     st.title("🤖 Aide à la décision (Q&A RAG)")
     
-    question = st.text_area("💬 Posez votre question médicale", height=100, placeholder="Ex: Combien de patients ont le diabète ?")
+    question = st.text_area("💬 Posez votre question médicale", height=100,
+                            placeholder="Ex: Combien de patients ont le diabète ?")
     
     if st.button("🔍 POSER LA QUESTION", type="primary", use_container_width=True):
         if question:
@@ -181,30 +240,128 @@ elif menu == "🤖 Q&A RAG":
                 
                 👥 Nombre : **145 patients**
                 📊 Âge moyen : **62.3 ans**
-                
-                📋 Par type de maladie :
-                - Cardiovasculaire : 48
-                - Diabète : 36
-                - Respiratoire : 32
-                - Infection : 29
                 """)
             else:
-                st.info("💡 Essayez : 'Combien de patients ont le diabète ?' ou 'Quels sont les patients à risque ?'")
-        else:
-            st.warning("⚠️ Veuillez saisir une question.")
+                st.info("💡 Essayez : 'Combien de patients ont le diabète ?'")
+
+# ==================== PAGE GESTION DES MÉDECINS ====================
+elif menu == "👨‍⚕️ Gestion des médecins":
+    st.title("👨‍⚕️ Gestion des médecins")
+    
+    st.subheader("📋 Liste des médecins")
+    st.dataframe(st.session_state.medecins, use_container_width=True)
+    
+    st.markdown("---")
+    
+    # Ajouter un médecin
+    with st.expander("➕ Ajouter un médecin", expanded=False):
+        col1, col2 = st.columns(2)
+        with col1:
+            nom = st.text_input("Nom", key="add_nom")
+            prenom = st.text_input("Prénom", key="add_prenom")
+            email = st.text_input("Email", key="add_email")
+        with col2:
+            specialite = st.text_input("Spécialité", key="add_specialite")
+            telephone = st.text_input("Téléphone", key="add_telephone")
+        
+        if st.button("✅ Ajouter le médecin"):
+            if nom and prenom and email:
+                new_id = len(st.session_state.medecins) + 1
+                new_medecin = pd.DataFrame({
+                    'ID': [new_id], 'Nom': [nom], 'Prénom': [prenom],
+                    'Email': [email], 'Spécialité': [specialite], 'Téléphone': [telephone]
+                })
+                st.session_state.medecins = pd.concat([st.session_state.medecins, new_medecin], ignore_index=True)
+                st.success(f"✅ Médecin {nom} {prenom} ajouté !")
+                st.rerun()
+            else:
+                st.error("❌ Nom, Prénom et Email sont obligatoires")
+    
+    # Supprimer un médecin
+    with st.expander("🗑️ Supprimer un médecin", expanded=False):
+        if len(st.session_state.medecins) > 0:
+            medecin_options = st.session_state.medecins.apply(
+                lambda x: f"{x['Nom']} {x['Prénom']} (ID: {x['ID']})", axis=1
+            ).tolist()
+            selected = st.selectbox("Choisir un médecin", medecin_options)
+            if st.button("🗑️ SUPPRIMER"):
+                idx = medecin_options.index(selected)
+                medecin_id = st.session_state.medecins.iloc[idx]['ID']
+                st.session_state.medecins = st.session_state.medecins[
+                    st.session_state.medecins['ID'] != medecin_id
+                ].reset_index(drop=True)
+                st.success("✅ Médecin supprimé !")
+                st.rerun()
+
+# ==================== PAGE DOSSIERS MÉDICAUX ====================
+elif menu == "📋 Dossiers médicaux":
+    st.title("📋 Dossiers médicaux")
+    
+    df = st.session_state.patients
+    
+    # Filtres
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        type_filter = st.selectbox("Type de maladie", ["Tous"] + df['Type maladie'].unique().tolist())
+    with col2:
+        risque_filter = st.selectbox("Risque", ["Tous", "Élevé", "Faible"])
+    with col3:
+        search = st.text_input("🔍 Rechercher par ID")
+    
+    # Filtrer
+    filtered_df = df.copy()
+    if type_filter != "Tous":
+        filtered_df = filtered_df[filtered_df['Type maladie'] == type_filter]
+    if risque_filter != "Tous":
+        risque_val = 1 if risque_filter == "Élevé" else 0
+        filtered_df = filtered_df[filtered_df['Risque'] == risque_val]
+    if search and search.isdigit():
+        filtered_df = filtered_df[filtered_df['ID'] == int(search)]
+    
+    st.dataframe(filtered_df, use_container_width=True, height=500)
+    
+    # Export
+    csv = filtered_df.to_csv(index=False).encode('utf-8')
+    st.download_button(
+        label="📥 Télécharger (CSV)",
+        data=csv,
+        file_name="dossiers_medicaux.csv",
+        mime="text/csv"
+    )
 
 # ==================== PAGE ADMINISTRATION ====================
 elif menu == "⚙️ Administration":
     st.title("⚙️ Administration")
     
     st.subheader("📊 Informations système")
-    st.write("""
-    - **Version** : 1.0.0
-    - **Base de données** : PostgreSQL + pgvector
-    - **Nombre de patients** : 200
-    - **Types de maladies** : 4
-    - **Patients à risque élevé** : 145
-    """)
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.metric("👤 Patients", len(st.session_state.patients))
+    with col2:
+        st.metric("🩺 Maladies", st.session_state.patients['Type maladie'].nunique())
+    with col3:
+        st.metric("👨‍⚕️ Médecins", len(st.session_state.medecins))
+    with col4:
+        st.metric("📦 Version", "1.0.0")
+    
+    st.markdown("---")
+    
+    with st.expander("📤 Ingestion de documents"):
+        uploaded_file = st.file_uploader("Choisir un fichier", type=["csv", "txt", "pdf"])
+        if uploaded_file and st.button("Lancer l'ingestion"):
+            with st.spinner("Ingestion..."):
+                time.sleep(2)
+            st.success("✅ Document ingéré !")
+    
+    with st.expander("🔄 Réindexation"):
+        modele = st.selectbox("Modèle", ["BioBERT", "ClinicalBERT", "DrBERT"])
+        if st.button("Lancer la réindexation"):
+            with st.spinner("Réindexation..."):
+                time.sleep(2)
+            st.success("✅ Réindexation terminée !")
+    
+    with st.expander("📋 Journaux d'audit"):
+        st.write("Aucun log pour le moment.")
 
 # ==================== FOOTER ====================
 st.markdown("---")
