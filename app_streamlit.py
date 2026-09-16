@@ -151,6 +151,21 @@ div[data-baseweb="select"] button {
     font-size: 1rem !important;
 }
 
+/* ===== Bouton RÉINITIALISER en ROUGE ===== */
+.btn-reset div.stButton > button {
+    background-color: #d93025 !important;
+    color: white !important;
+    border: 2px solid #000 !important;
+    font-weight: bold !important;
+    font-size: 1rem !important;
+    padding: 10px !important;
+    border-radius: 6px !important;
+}
+.btn-reset div.stButton > button:hover {
+    background-color: #a50e0e !important;
+    color: white !important;
+}
+
 /* ===== Titres ===== */
 .main-title { color: #1a73e8; font-size: 2.2rem; font-weight: bold; }
 .sub-title { color: #34a853; font-size: 1.4rem; font-weight: 600; }
@@ -319,7 +334,7 @@ if menu == "⚕️ Prédiction":
         with st.spinner("🔬 Recherche des patients similaires..."):
             time.sleep(1)
         
-        # Incrémenter le compteur de requêtes (heure actuelle)
+        # Incrémenter le compteur de requêtes
         heure_actuelle = datetime.datetime.now().hour
         st.session_state.requetes_par_heure[heure_actuelle] += 1
         
@@ -400,8 +415,8 @@ elif menu == "📊 Tableau de bord":
     st.markdown("---")
     st.subheader("📈 Évolution des requêtes par heure")
     
-    # Bouton pour simuler une requête (démo)
-    col_a, col_b = st.columns([1, 3])
+    # Boutons : Simuler + Réinitialiser
+    col_a, col_b, col_c = st.columns([1, 1, 2])
     with col_a:
         if st.button("➕ Simuler une requête", use_container_width=True):
             heure_actuelle = datetime.datetime.now().hour
@@ -409,6 +424,13 @@ elif menu == "📊 Tableau de bord":
             st.rerun()
     
     with col_b:
+        st.markdown('<div class="btn-reset">', unsafe_allow_html=True)
+        if st.button("🗑️ Réinitialiser", use_container_width=True):
+            st.session_state.requetes_par_heure = {h: 0 for h in range(24)}
+            st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    with col_c:
         total_requetes = sum(st.session_state.requetes_par_heure.values())
         st.info(f"📊 Total des requêtes : **{total_requetes}**")
     
@@ -423,7 +445,7 @@ elif menu == "📊 Tableau de bord":
     st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
     
     if total_requetes == 0:
-        st.warning("⚠️ Aucune requête pour le moment. Clique sur **➕ Simuler une requête** ou fais une prédiction pour tester.")
+        st.warning("⚠️ Aucune requête pour le moment. Clique sur **➕ Simuler une requête** ou fais une prédiction.")
 
 # ==================== PAGE Q&A RAG ====================
 elif menu == "Aide à la décision":
