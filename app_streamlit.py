@@ -68,11 +68,48 @@ section[data-testid="stSidebar"] div.stButton > button:hover {
     color: white !important;
 }
 
+/* ===== Bouton PRIMARY (Se connecter / Accéder) EN BLEU ===== */
+div[data-testid="stForm"] div.stButton > button,
+div[data-testid="stForm"] button[kind="primaryFormSubmit"],
+div[data-testid="stForm"] button[kind="secondaryFormSubmit"] {
+    background-color: #1a73e8 !important;
+    color: white !important;
+    border: none !important;
+    font-weight: bold !important;
+    font-size: 1.1rem !important;
+    padding: 12px !important;
+    border-radius: 4px !important;
+    width: 100% !important;
+}
+div[data-testid="stForm"] div.stButton > button:hover,
+div[data-testid="stForm"] button[kind="primaryFormSubmit"]:hover {
+    background-color: #0d47a1 !important;
+    color: white !important;
+}
+
+/* ===== Labels EN GRAS dans les formulaires ===== */
+div[data-testid="stForm"] label {
+    font-weight: bold !important;
+    color: #333 !important;
+    font-size: 1rem !important;
+}
+
+/* ===== Champs bordure noire dans les formulaires ===== */
+div[data-testid="stForm"] input[type="text"],
+div[data-testid="stForm"] input[type="password"] {
+    border: 2px solid #000 !important;
+    border-radius: 4px !important;
+}
+div[data-testid="stForm"] div[data-baseweb="select"] > div {
+    border: 2px solid #000 !important;
+    border-radius: 4px !important;
+}
+
 /* ===== Titres ===== */
 .main-title { color: #1a73e8; font-size: 2.2rem; font-weight: bold; }
 .sub-title { color: #34a853; font-size: 1.4rem; font-weight: 600; }
 
-/* ===== PAGE ACCÈS + CONNEXION ===== */
+/* ===== Style des pages auth ===== */
 .auth-cross {
     text-align: center;
     font-size: 90px;
@@ -92,51 +129,6 @@ section[data-testid="stSidebar"] div.stButton > button:hover {
     text-align: center;
     color: #666;
     margin-bottom: 30px;
-}
-.auth-card {
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    padding: 25px;
-    max-width: 500px;
-    margin: 0 auto;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-}
-/* Labels EN GRAS */
-.auth-card label,
-.auth-card .stTextInput label,
-.auth-card .stSelectbox label {
-    font-weight: bold !important;
-    color: #333 !important;
-    font-size: 1rem !important;
-}
-/* Champs bordure noire */
-.auth-card input[type="text"],
-.auth-card input[type="password"] {
-    border: 2px solid #000 !important;
-    border-radius: 4px !important;
-    padding: 10px !important;
-}
-.auth-card div[data-baseweb="select"] > div {
-    border: 2px solid #000 !important;
-    border-radius: 4px !important;
-}
-/* Bouton BLEU pleine largeur */
-.auth-card div.stButton > button,
-.auth-card div.stButton > button:focus,
-.auth-card div.stButton > button:active {
-    background-color: #1a73e8 !important;
-    color: white !important;
-    border: none !important;
-    font-weight: bold !important;
-    font-size: 1.1rem !important;
-    padding: 12px !important;
-    width: 100% !important;
-    border-radius: 4px !important;
-}
-.auth-card div.stButton > button:hover {
-    background-color: #0d47a1 !important;
-    color: white !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -185,15 +177,18 @@ if not st.session_state.access_granted:
     st.markdown('<div class="auth-title">Accès Sécurisé</div>', unsafe_allow_html=True)
     st.markdown('<div class="auth-sub">Cette application est protégée. Entrez le mot de passe d\'accès.</div>', unsafe_allow_html=True)
     
-    st.markdown('<div class="auth-card">', unsafe_allow_html=True)
-    access_code = st.text_input("Mot de passe d'accès", type="password", key="access_pwd")
-    if st.button("Accéder à l'application", use_container_width=True, key="btn_access"):
-        if access_code == ACCESS_PASSWORD:
-            st.session_state.access_granted = True
-            st.rerun()
-        else:
-            st.error("❌ Mot de passe d'accès incorrect")
-    st.markdown('</div>', unsafe_allow_html=True)
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        with st.form("access_form"):
+            access_code = st.text_input("Mot de passe d'accès", type="password", key="access_pwd")
+            submit_access = st.form_submit_button("Accéder à l'application", use_container_width=True)
+        
+        if submit_access:
+            if access_code == ACCESS_PASSWORD:
+                st.session_state.access_granted = True
+                st.rerun()
+            else:
+                st.error("❌ Mot de passe d'accès incorrect")
     st.stop()
 
 # ==================== 2ème BARRIÈRE : CONNEXION ====================
@@ -202,23 +197,25 @@ if not st.session_state.authenticated:
     st.markdown('<div class="auth-title">Système Médical Intelligent</div>', unsafe_allow_html=True)
     st.markdown('<div class="auth-sub">Connectez-vous avec vos identifiants</div>', unsafe_allow_html=True)
     
-    st.markdown('<div class="auth-card">', unsafe_allow_html=True)
-    username = st.text_input("Identifiant", placeholder="", key="login_user")
-    password = st.text_input("Mot de passe", type="password", placeholder="", key="login_pass")
-    role = st.selectbox("Rôle", ["Médecin", "Administrateur"], key="login_role")
-    
-    if st.button("Se connecter", use_container_width=True, key="btn_login"):
-        if username == "medecin" and password == "medecin123" and role == "Médecin":
-            st.session_state.authenticated = True
-            st.session_state.role = "Médecin"
-            st.rerun()
-        elif username == "admin" and password == "admin123" and role == "Administrateur":
-            st.session_state.authenticated = True
-            st.session_state.role = "Administrateur"
-            st.rerun()
-        else:
-            st.error("❌ Identifiants incorrects")
-    st.markdown('</div>', unsafe_allow_html=True)
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        with st.form("login_form"):
+            username = st.text_input("Identifiant", key="login_user")
+            password = st.text_input("Mot de passe", type="password", key="login_pass")
+            role = st.selectbox("Rôle", ["Médecin", "Administrateur"], key="login_role")
+            submit_login = st.form_submit_button("Se connecter", use_container_width=True)
+        
+        if submit_login:
+            if username == "medecin" and password == "medecin123" and role == "Médecin":
+                st.session_state.authenticated = True
+                st.session_state.role = "Médecin"
+                st.rerun()
+            elif username == "admin" and password == "admin123" and role == "Administrateur":
+                st.session_state.authenticated = True
+                st.session_state.role = "Administrateur"
+                st.rerun()
+            else:
+                st.error("❌ Identifiants incorrects")
     st.stop()
 
 # ==================== APPLICATION PRINCIPALE ====================
@@ -264,7 +261,7 @@ if menu == "🔍 Prédiction":
         hospitalisations = st.number_input("Hospitalisations", min_value=0, max_value=20, value=0, step=1)
         duree_sejour = st.number_input("Durée séjour", min_value=1, max_value=30, value=5, step=1)
     
-    if st.button("🔍 PRÉDIRE LE RISQUE", use_container_width=True, key="btn_predict"):
+    if st.button("🔍 PRÉDIRE LE RISQUE", use_container_width=True, key="btn_predict", type="primary"):
         with st.spinner("🔬 Recherche des patients similaires..."):
             time.sleep(1)
         
@@ -333,7 +330,7 @@ elif menu == "🤖 Aide à la décision":
     question = st.text_area("💬 Posez votre question médicale", height=100,
                             placeholder="Ex: Combien de patients ont le diabète ?")
     
-    if st.button("🔍 POSER LA QUESTION", use_container_width=True, key="btn_q"):
+    if st.button("🔍 POSER LA QUESTION", use_container_width=True, key="btn_q", type="primary"):
         if question:
             with st.spinner("🔍 Recherche en cours..."):
                 time.sleep(1)
