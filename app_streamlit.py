@@ -14,6 +14,36 @@ st.set_page_config(
 # ==================== STYLE GLOBAL ====================
 st.markdown("""
 <style>
+/* Boutons HTML colorés (Ajouter/Modifier/Supprimer) */
+.action-buttons {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 25px;
+}
+.action-buttons a {
+    flex: 1;
+    padding: 14px 20px;
+    border-radius: 6px;
+    text-align: center;
+    font-weight: bold;
+    color: white !important;
+    text-decoration: none !important;
+    font-size: 1.05rem;
+    transition: 0.2s;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    border: 2px solid #000;
+    cursor: pointer;
+    display: block;
+}
+.action-buttons a:hover {
+    opacity: 0.88;
+    transform: translateY(-2px);
+    color: white !important;
+}
+.btn-ajouter { background-color: #34a853; }
+.btn-modifier { background-color: #1a73e8; }
+.btn-supprimer { background-color: #d93025; }
+
 /* Bouton Déconnexion en ROUGE (sidebar) */
 section[data-testid="stSidebar"] div.stButton > button {
     background-color: #d93025 !important;
@@ -26,7 +56,7 @@ section[data-testid="stSidebar"] div.stButton > button:hover {
     color: white !important;
 }
 
-/* Bouton PRIMARY (vert) */
+/* Bouton PRIMARY vert */
 div.stButton > button[kind="primary"] {
     background-color: #34a853 !important;
     color: white !important;
@@ -37,70 +67,8 @@ div.stButton > button[kind="primary"]:hover {
     background-color: #1e7e34 !important;
 }
 
-/* Bouton SECONDARY (bleu) */
-div.stButton > button[kind="secondary"] {
-    background-color: #1a73e8 !important;
-    color: white !important;
-    border: none !important;
-    font-weight: bold !important;
-}
-div.stButton > button[kind="secondary"]:hover {
-    background-color: #0d47a1 !important;
-}
-
-/* Bouton ROUGE custom */
-.btn-rouge div.stButton > button {
-    background-color: #d93025 !important;
-    color: white !important;
-    border: none !important;
-    font-weight: bold !important;
-}
-.btn-rouge div.stButton > button:hover {
-    background-color: #a50e0e !important;
-}
-
 .main-title { color: #1a73e8; font-size: 2.2rem; font-weight: bold; }
 .sub-title { color: #34a853; font-size: 1.4rem; font-weight: 600; }
-
-/* Radio buttons stylisés en gros boutons colorés */
-div[role="radiogroup"] {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 25px;
-}
-div[role="radiogroup"] > label {
-    flex: 1;
-    padding: 14px 20px;
-    border-radius: 8px;
-    text-align: center;
-    font-weight: bold;
-    color: white !important;
-    cursor: pointer;
-    border: none;
-    transition: 0.2s;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-}
-div[role="radiogroup"] > label:nth-child(1) {
-    background-color: #34a853;
-}
-div[role="radiogroup"] > label:nth-child(2) {
-    background-color: #1a73e8;
-}
-div[role="radiogroup"] > label:nth-child(3) {
-    background-color: #d93025;
-}
-div[role="radiogroup"] > label:hover {
-    opacity: 0.88;
-    transform: translateY(-2px);
-}
-div[role="radiogroup"] > label p {
-    color: white !important;
-    font-size: 1.05rem;
-    font-weight: bold;
-}
-div[role="radiogroup"] > label > div:first-child {
-    display: none;
-}
 </style>
 """, unsafe_allow_html=True)
 
@@ -210,7 +178,7 @@ else:
         "⚙️ Administration"
     ])
 
-# Déconnexion (ROUGE via CSS sidebar)
+# Déconnexion ROUGE
 st.sidebar.markdown("---")
 if st.sidebar.button("🚪 Déconnexion", use_container_width=True, key="btn_logout"):
     st.session_state.authenticated = False
@@ -240,7 +208,6 @@ if menu == "🔍 Prédiction":
             time.sleep(1)
         
         st.subheader("📊 Résultats")
-        
         data = {
             "ID": [99, 113, 11, 72, 56],
             "Âge": [61, 79, 36, 19, 54],
@@ -264,7 +231,6 @@ if menu == "🔍 Prédiction":
 # ==================== PAGE TABLEAU DE BORD ====================
 elif menu == "📊 Tableau de bord":
     st.title("📊 Tableau de bord")
-    
     df = st.session_state.patients
     
     col1, col2, col3, col4 = st.columns(4)
@@ -284,7 +250,6 @@ elif menu == "📊 Tableau de bord":
         fig = px.pie(df, names='Type maladie', title='Répartition des types de maladies',
                      color_discrete_sequence=px.colors.qualitative.Set3)
         st.plotly_chart(fig, use_container_width=True)
-    
     with col2:
         risk_by_disease = df.groupby(['Type maladie', 'Risque']).size().reset_index(name='Count')
         fig = px.bar(risk_by_disease, x='Type maladie', y='Count', color='Risque',
@@ -304,7 +269,6 @@ elif menu == "📊 Tableau de bord":
 # ==================== PAGE Q&A RAG ====================
 elif menu == "🤖 Aide à la décision":
     st.title("🤖 Aide à la décision (Q&A RAG)")
-    
     question = st.text_area("💬 Posez votre question médicale", height=100,
                             placeholder="Ex: Combien de patients ont le diabète ?")
     
@@ -312,9 +276,7 @@ elif menu == "🤖 Aide à la décision":
         if question:
             with st.spinner("🔍 Recherche en cours..."):
                 time.sleep(1)
-            
             st.subheader("📋 Réponse")
-            
             if "diabète" in question.lower() or "diabete" in question.lower():
                 st.write("""
                 🩺 **INFORMATIONS SUR LE DIABÈTE**
@@ -336,23 +298,25 @@ elif menu == "🤖 Aide à la décision":
 # ==================== PAGE GESTION DES MÉDECINS ====================
 elif menu == "👨‍⚕️ Gestion des médecins":
     st.markdown('<p class="main-title">👨‍⚕️ Gestion des médecins</p>', unsafe_allow_html=True)
-    
     st.markdown('<p class="sub-title">📋 Liste des médecins</p>', unsafe_allow_html=True)
     st.dataframe(st.session_state.medecins, use_container_width=True)
     
     st.markdown("---")
     
-    # ===== MENU COLORÉ (boutons radio stylisés) =====
-    choix = st.radio(
-        "Action",
-        ["➕ Ajouter", "✏️ Modifier", "🗑️ Supprimer"],
-        horizontal=True,
-        label_visibility="collapsed",
-        key="medecin_action"
-    )
+    # Récupérer l'action depuis l'URL (par défaut = ajouter)
+    action = st.query_params.get("action", "ajouter")
     
-    # ---------- AJOUTER (VERT) ----------
-    if choix == "➕ Ajouter":
+    # Les 3 boutons HTML colorés
+    st.markdown(f"""
+    <div class="action-buttons">
+        <a href="?action=ajouter" target="_self" class="btn-ajouter">➕ Ajouter</a>
+        <a href="?action=modifier" target="_self" class="btn-modifier">✏️ Modifier</a>
+        <a href="?action=supprimer" target="_self" class="btn-supprimer">🗑️ Supprimer</a>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # ---------- FORMULAIRE AJOUTER ----------
+    if action == "ajouter":
         col1, col2 = st.columns(2)
         with col1:
             nom = st.text_input("Nom", key="add_nom")
@@ -375,8 +339,8 @@ elif menu == "👨‍⚕️ Gestion des médecins":
             else:
                 st.error("❌ Nom, Prénom et Email sont obligatoires")
     
-    # ---------- MODIFIER (BLEU) ----------
-    elif choix == "✏️ Modifier":
+    # ---------- FORMULAIRE MODIFIER ----------
+    elif action == "modifier":
         if len(st.session_state.medecins) > 0:
             medecin_options = st.session_state.medecins.apply(
                 lambda x: f"{x['Nom']} {x['Prénom']} (ID: {x['ID']})", axis=1
@@ -405,15 +369,14 @@ elif menu == "👨‍⚕️ Gestion des médecins":
         else:
             st.info("Aucun médecin à modifier.")
     
-    # ---------- SUPPRIMER (ROUGE) ----------
-    elif choix == "🗑️ Supprimer":
+    # ---------- FORMULAIRE SUPPRIMER ----------
+    elif action == "supprimer":
         if len(st.session_state.medecins) > 0:
             medecin_options = st.session_state.medecins.apply(
                 lambda x: f"{x['Nom']} {x['Prénom']} (ID: {x['ID']})", axis=1
             ).tolist()
             selected = st.selectbox("Choisir un médecin à supprimer", medecin_options, key="del_select")
             
-            st.markdown('<div class="btn-rouge">', unsafe_allow_html=True)
             if st.button("🗑️ SUPPRIMER", use_container_width=True, key="btn_del"):
                 idx = medecin_options.index(selected)
                 medecin_id = st.session_state.medecins.iloc[idx]['ID']
@@ -422,14 +385,12 @@ elif menu == "👨‍⚕️ Gestion des médecins":
                 ].reset_index(drop=True)
                 st.success("✅ Médecin supprimé !")
                 st.rerun()
-            st.markdown('</div>', unsafe_allow_html=True)
         else:
             st.info("Aucun médecin à supprimer.")
 
 # ==================== PAGE DOSSIERS MÉDICAUX ====================
 elif menu == "📋 Dossiers médicaux":
     st.title("📋 Dossiers médicaux")
-    
     df = st.session_state.patients
     
     col1, col2, col3 = st.columns(3)
@@ -462,7 +423,6 @@ elif menu == "📋 Dossiers médicaux":
 # ==================== PAGE ADMINISTRATION ====================
 elif menu == "⚙️ Administration":
     st.title("⚙️ Administration")
-    
     st.subheader("📊 Informations système")
     col1, col2, col3, col4 = st.columns(4)
     with col1:
