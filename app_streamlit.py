@@ -99,6 +99,34 @@ div[data-testid="stSelectbox"] label,
     font-size: 1.05rem !important;
 }
 
+/* ===== NEUTRALISER LES COULEURS DES BOUTONS +/- ET SELECTBOX ===== */
+button[data-testid="stNumberInputStepDown"],
+button[data-testid="stNumberInputStepUp"] {
+    background-color: #f0f2f6 !important;
+    color: #333 !important;
+    border: 1px solid #ccc !important;
+}
+button[data-testid="stNumberInputStepDown"]:hover,
+button[data-testid="stNumberInputStepUp"]:hover {
+    background-color: #e0e2e6 !important;
+    color: #333 !important;
+}
+button[data-testid="stNumberInputStepDown"] svg,
+button[data-testid="stNumberInputStepUp"] svg {
+    fill: #333 !important;
+    color: #333 !important;
+}
+
+/* Selectbox (chevron) */
+div[data-baseweb="select"] > div {
+    background-color: #f0f2f6 !important;
+    border: 1px solid #ccc !important;
+}
+div[data-baseweb="select"] svg {
+    fill: #666 !important;
+    color: #666 !important;
+}
+
 /* ===== Titres ===== */
 .main-title { color: #1a73e8; font-size: 2.2rem; font-weight: bold; }
 .sub-title { color: #34a853; font-size: 1.4rem; font-weight: 600; }
@@ -241,11 +269,11 @@ st.sidebar.markdown("---")
 
 # ==================== MENU SELON LE RÔLE ====================
 if st.session_state.role == "Médecin":
-    menu = st.sidebar.radio("Navigation", ["🔍 Prédiction", "🤖 Aide à la décision"])
+    menu = st.sidebar.radio("Navigation", ["⚕️ Prédiction", "🤖 Aide à la décision"])
 else:
     menu = st.sidebar.radio("Navigation", [
         "📊 Tableau de bord",
-        "🔍 Prédiction",
+        "⚕️ Prédiction",
         "🤖 Aide à la décision",
         "🥼 Gestion des médecins",
         "📋 Dossiers médicaux",
@@ -261,10 +289,10 @@ if st.sidebar.button("🚪 Déconnexion", use_container_width=True, key="btn_log
     st.rerun()
 
 # ==================== PAGE PRÉDICTION ====================
-if menu == "🔍 Prédiction":
-    st.title("🔍 Prédiction de risque médical")
+if menu == "⚕️ Prédiction":
+    st.title("⚕️ Prédiction de risque médical")
     
-    st.subheader("📋 Saisie du patient")
+    st.subheader("Saisie du patient")
     col1, col2 = st.columns(2)
     with col1:
         age = st.number_input("Âge", min_value=0, max_value=120, value=50, step=1)
@@ -277,7 +305,7 @@ if menu == "🔍 Prédiction":
         hospitalisations = st.number_input("Hospitalisations", min_value=0, max_value=20, value=0, step=1)
         duree_sejour = st.number_input("Durée séjour", min_value=1, max_value=30, value=5, step=1)
     
-    if st.button("🔍 PRÉDIRE LE RISQUE", use_container_width=True, key="btn_predict", type="primary"):
+    if st.button("⚕️ PRÉDIRE LE RISQUE", use_container_width=True, key="btn_predict", type="primary"):
         with st.spinner("🔬 Recherche des patients similaires..."):
             time.sleep(1)
         
