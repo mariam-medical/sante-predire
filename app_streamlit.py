@@ -7,66 +7,68 @@ import time
 # ==================== CONFIGURATION ====================
 st.set_page_config(
     page_title="Système Médical Intelligent",
-    page_icon="☤",
+    page_icon="✚",
     layout="wide"
 )
 
 # ==================== STYLE GLOBAL ====================
 st.markdown("""
 <style>
-/* Boutons HTML colorés (Ajouter/Modifier/Supprimer) */
-.action-buttons {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 25px;
-}
-.action-buttons a {
-    flex: 1;
-    padding: 14px 20px;
-    border-radius: 6px;
-    text-align: center;
-    font-weight: bold;
+/* ===== BOUTONS COLORÉS (Ajouter/Modifier/Supprimer) ===== */
+.btn-vert div.stButton > button {
+    background-color: #34a853 !important;
     color: white !important;
-    text-decoration: none !important;
-    font-size: 1.05rem;
-    transition: 0.2s;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-    border: 2px solid #000;
-    cursor: pointer;
-    display: block;
+    border: 2px solid #000 !important;
+    font-weight: bold !important;
+    font-size: 1.05rem !important;
+    padding: 12px !important;
+    border-radius: 6px !important;
 }
-.action-buttons a:hover {
-    opacity: 0.88;
-    transform: translateY(-2px);
+.btn-vert div.stButton > button:hover {
+    background-color: #1e7e34 !important;
     color: white !important;
 }
-.btn-ajouter { background-color: #34a853; }
-.btn-modifier { background-color: #1a73e8; }
-.btn-supprimer { background-color: #d93025; }
+.btn-bleu div.stButton > button {
+    background-color: #1a73e8 !important;
+    color: white !important;
+    border: 2px solid #000 !important;
+    font-weight: bold !important;
+    font-size: 1.05rem !important;
+    padding: 12px !important;
+    border-radius: 6px !important;
+}
+.btn-bleu div.stButton > button:hover {
+    background-color: #0d47a1 !important;
+    color: white !important;
+}
+.btn-rouge div.stButton > button {
+    background-color: #d93025 !important;
+    color: white !important;
+    border: 2px solid #000 !important;
+    font-weight: bold !important;
+    font-size: 1.05rem !important;
+    padding: 12px !important;
+    border-radius: 6px !important;
+}
+.btn-rouge div.stButton > button:hover {
+    background-color: #a50e0e !important;
+    color: white !important;
+}
 
-/* Bouton Déconnexion en ROUGE (sidebar) */
+/* ===== Bouton Déconnexion en ROUGE (sidebar) ===== */
 section[data-testid="stSidebar"] div.stButton > button {
     background-color: #d93025 !important;
     color: white !important;
     border: none !important;
     font-weight: bold !important;
+    border-radius: 6px !important;
 }
 section[data-testid="stSidebar"] div.stButton > button:hover {
     background-color: #a50e0e !important;
     color: white !important;
 }
 
-/* Bouton PRIMARY vert */
-div.stButton > button[kind="primary"] {
-    background-color: #34a853 !important;
-    color: white !important;
-    border: none !important;
-    font-weight: bold !important;
-}
-div.stButton > button[kind="primary"]:hover {
-    background-color: #1e7e34 !important;
-}
-
+/* ===== Titres ===== */
 .main-title { color: #1a73e8; font-size: 2.2rem; font-weight: bold; }
 .sub-title { color: #34a853; font-size: 1.4rem; font-weight: 600; }
 </style>
@@ -113,55 +115,119 @@ if 'medecins' not in st.session_state:
 # ==================== 1ère BARRIÈRE : ACCÈS AU SITE ====================
 if not st.session_state.access_granted:
     st.markdown("""
-    <div style="text-align: center; padding: 20px 0;">
-        <p style="font-size: 80px; margin: 0; color: #1a73e8;">🔐</p>
-        <h1 style="color: #1a73e8;">Accès Sécurisé</h1>
-        <p style="color: #555;">Cette application est protégée. Entrez le mot de passe d'accès.</p>
-    </div>
+    <style>
+    .access-cross { text-align: center; font-size: 90px; color: #d93025; margin: 30px 0 10px 0; font-weight: bold; }
+    .access-title { text-align: center; color: #1a73e8; font-size: 2rem; font-weight: bold; }
+    .access-sub { text-align: center; color: #666; margin-bottom: 30px; }
+    .access-card {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        padding: 25px;
+        max-width: 500px;
+        margin: 0 auto;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+    .access-card label { font-weight: bold !important; color: #333 !important; }
+    .access-card input[type="password"] {
+        border: 2px solid #000 !important;
+        border-radius: 4px !important;
+        padding: 10px !important;
+    }
+    .access-card div.stButton > button {
+        background-color: #1a73e8 !important;
+        color: white !important;
+        border: none !important;
+        font-weight: bold !important;
+        font-size: 1.1rem !important;
+        padding: 12px !important;
+        width: 100% !important;
+        border-radius: 4px !important;
+    }
+    .access-card div.stButton > button:hover { background-color: #0d47a1 !important; }
+    </style>
     """, unsafe_allow_html=True)
     
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        access_code = st.text_input("🔑 Mot de passe d'accès", type="password", placeholder="Entrez le mot de passe")
-        if st.button("🚪 Accéder à l'application", use_container_width=True, type="primary"):
-            if access_code == ACCESS_PASSWORD:
-                st.session_state.access_granted = True
-                st.rerun()
-            else:
-                st.error("❌ Mot de passe d'accès incorrect")
+    st.markdown('<div class="access-cross">🔐</div>', unsafe_allow_html=True)
+    st.markdown('<div class="access-title">Accès Sécurisé</div>', unsafe_allow_html=True)
+    st.markdown('<div class="access-sub">Cette application est protégée. Entrez le mot de passe d\'accès.</div>', unsafe_allow_html=True)
+    
+    st.markdown('<div class="access-card">', unsafe_allow_html=True)
+    access_code = st.text_input("Mot de passe d'accès", type="password", key="access_pwd")
+    if st.button("Accéder à l'application", use_container_width=True, key="btn_access"):
+        if access_code == ACCESS_PASSWORD:
+            st.session_state.access_granted = True
+            st.rerun()
+        else:
+            st.error("❌ Mot de passe d'accès incorrect")
+    st.markdown('</div>', unsafe_allow_html=True)
     st.stop()
 
 # ==================== 2ème BARRIÈRE : CONNEXION ====================
 if not st.session_state.authenticated:
     st.markdown("""
-    <div style="text-align: center; padding: 20px 0;">
-        <p style="font-size: 80px; margin: 0; color: #1a73e8;">☤</p>
-        <h1 style="color: #1a73e8;">Système Médical Intelligent</h1>
-        <p style="color: #555;">Connectez-vous avec vos identifiants</p>
-    </div>
+    <style>
+    .login-cross { text-align: center; font-size: 90px; color: #d93025; margin: 30px 0 10px 0; font-weight: bold; }
+    .login-title { text-align: center; color: #1a73e8; font-size: 2rem; font-weight: bold; }
+    .login-sub { text-align: center; color: #666; margin-bottom: 30px; }
+    .login-card {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        padding: 25px;
+        max-width: 500px;
+        margin: 0 auto;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+    .login-card label { font-weight: bold !important; color: #333 !important; font-size: 1rem !important; }
+    .login-card input[type="text"], .login-card input[type="password"] {
+        border: 2px solid #000 !important;
+        border-radius: 4px !important;
+        padding: 10px !important;
+    }
+    .login-card div[data-baseweb="select"] > div {
+        border: 2px solid #000 !important;
+        border-radius: 4px !important;
+    }
+    .login-card div.stButton > button {
+        background-color: #1a73e8 !important;
+        color: white !important;
+        border: none !important;
+        font-weight: bold !important;
+        font-size: 1.1rem !important;
+        padding: 12px !important;
+        width: 100% !important;
+        border-radius: 4px !important;
+    }
+    .login-card div.stButton > button:hover { background-color: #0d47a1 !important; }
+    </style>
     """, unsafe_allow_html=True)
     
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        username = st.text_input("👤 Identifiant", placeholder="Entrez votre identifiant")
-        password = st.text_input("🔑 Mot de passe", type="password", placeholder="Entrez votre mot de passe")
-        role = st.selectbox("🎯 Rôle", ["Médecin", "Administrateur"])
-        
-        if st.button("🚪 Se connecter", use_container_width=True, type="primary"):
-            if username == "medecin" and password == "medecin123" and role == "Médecin":
-                st.session_state.authenticated = True
-                st.session_state.role = "Médecin"
-                st.rerun()
-            elif username == "admin" and password == "admin123" and role == "Administrateur":
-                st.session_state.authenticated = True
-                st.session_state.role = "Administrateur"
-                st.rerun()
-            else:
-                st.error("❌ Identifiants incorrects")
+    st.markdown('<div class="login-cross">✚</div>', unsafe_allow_html=True)
+    st.markdown('<div class="login-title">Système Médical Intelligent</div>', unsafe_allow_html=True)
+    st.markdown('<div class="login-sub">Connectez-vous avec vos identifiants</div>', unsafe_allow_html=True)
+    
+    st.markdown('<div class="login-card">', unsafe_allow_html=True)
+    username = st.text_input("Identifiant", placeholder="", key="login_user")
+    password = st.text_input("Mot de passe", type="password", placeholder="", key="login_pass")
+    role = st.selectbox("Rôle", ["Médecin", "Administrateur"], key="login_role")
+    
+    if st.button("Se connecter", use_container_width=True, key="btn_login"):
+        if username == "medecin" and password == "medecin123" and role == "Médecin":
+            st.session_state.authenticated = True
+            st.session_state.role = "Médecin"
+            st.rerun()
+        elif username == "admin" and password == "admin123" and role == "Administrateur":
+            st.session_state.authenticated = True
+            st.session_state.role = "Administrateur"
+            st.rerun()
+        else:
+            st.error("❌ Identifiants incorrects")
+    st.markdown('</div>', unsafe_allow_html=True)
     st.stop()
 
 # ==================== APPLICATION PRINCIPALE ====================
-st.sidebar.markdown("## ☤ Système Médical")
+st.sidebar.markdown("## ✚ Système Médical")
 st.sidebar.markdown(f"👋 Connecté : **{st.session_state.role}**")
 st.sidebar.markdown("---")
 
@@ -203,7 +269,7 @@ if menu == "🔍 Prédiction":
         hospitalisations = st.number_input("Hospitalisations", min_value=0, max_value=20, value=0, step=1)
         duree_sejour = st.number_input("Durée séjour", min_value=1, max_value=30, value=5, step=1)
     
-    if st.button("🔍 PRÉDIRE LE RISQUE", type="primary", use_container_width=True):
+    if st.button("🔍 PRÉDIRE LE RISQUE", use_container_width=True, key="btn_predict"):
         with st.spinner("🔬 Recherche des patients similaires..."):
             time.sleep(1)
         
@@ -272,7 +338,7 @@ elif menu == "🤖 Aide à la décision":
     question = st.text_area("💬 Posez votre question médicale", height=100,
                             placeholder="Ex: Combien de patients ont le diabète ?")
     
-    if st.button("🔍 POSER LA QUESTION", type="primary", use_container_width=True):
+    if st.button("🔍 POSER LA QUESTION", use_container_width=True, key="btn_q"):
         if question:
             with st.spinner("🔍 Recherche en cours..."):
                 time.sleep(1)
@@ -303,20 +369,38 @@ elif menu == "👨‍⚕️ Gestion des médecins":
     
     st.markdown("---")
     
-    # Récupérer l'action depuis l'URL (par défaut = ajouter)
-    action = st.query_params.get("action", "ajouter")
+    # Initialiser l'action dans session_state
+    if 'medecin_action' not in st.session_state:
+        st.session_state.medecin_action = "ajouter"
     
-    # Les 3 boutons HTML colorés
-    st.markdown(f"""
-    <div class="action-buttons">
-        <a href="?action=ajouter" target="_self" class="btn-ajouter">➕ Ajouter</a>
-        <a href="?action=modifier" target="_self" class="btn-modifier">✏️ Modifier</a>
-        <a href="?action=supprimer" target="_self" class="btn-supprimer">🗑️ Supprimer</a>
-    </div>
-    """, unsafe_allow_html=True)
+    # ===== 3 BOUTONS COLORÉS CÔTE À CÔTE =====
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.markdown('<div class="btn-vert">', unsafe_allow_html=True)
+        if st.button("➕ Ajouter", use_container_width=True, key="tab_add"):
+            st.session_state.medecin_action = "ajouter"
+            st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
+    with col2:
+        st.markdown('<div class="btn-bleu">', unsafe_allow_html=True)
+        if st.button("✏️ Modifier", use_container_width=True, key="tab_edit"):
+            st.session_state.medecin_action = "modifier"
+            st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
+    with col3:
+        st.markdown('<div class="btn-rouge">', unsafe_allow_html=True)
+        if st.button("🗑️ Supprimer", use_container_width=True, key="tab_del"):
+            st.session_state.medecin_action = "supprimer"
+            st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    st.markdown("---")
+    
+    action = st.session_state.medecin_action
     
     # ---------- FORMULAIRE AJOUTER ----------
     if action == "ajouter":
+        st.subheader("➕ Ajouter un médecin")
         col1, col2 = st.columns(2)
         with col1:
             nom = st.text_input("Nom", key="add_nom")
@@ -326,7 +410,8 @@ elif menu == "👨‍⚕️ Gestion des médecins":
             specialite = st.text_input("Spécialité", key="add_specialite")
             telephone = st.text_input("Téléphone", key="add_telephone")
         
-        if st.button("✅ Ajouter le médecin", use_container_width=True, type="primary", key="btn_add"):
+        st.markdown('<div class="btn-vert">', unsafe_allow_html=True)
+        if st.button("✅ Ajouter le médecin", use_container_width=True, key="btn_add"):
             if nom and prenom and email:
                 new_id = int(st.session_state.medecins['ID'].max()) + 1 if len(st.session_state.medecins) > 0 else 1
                 new_medecin = pd.DataFrame({
@@ -338,9 +423,11 @@ elif menu == "👨‍⚕️ Gestion des médecins":
                 st.rerun()
             else:
                 st.error("❌ Nom, Prénom et Email sont obligatoires")
+        st.markdown('</div>', unsafe_allow_html=True)
     
     # ---------- FORMULAIRE MODIFIER ----------
     elif action == "modifier":
+        st.subheader("✏️ Modifier un médecin")
         if len(st.session_state.medecins) > 0:
             medecin_options = st.session_state.medecins.apply(
                 lambda x: f"{x['Nom']} {x['Prénom']} (ID: {x['ID']})", axis=1
@@ -358,6 +445,7 @@ elif menu == "👨‍⚕️ Gestion des médecins":
                 new_specialite = st.text_input("Spécialité", value=med['Spécialité'], key="edit_specialite")
                 new_telephone = st.text_input("Téléphone", value=med['Téléphone'], key="edit_telephone")
             
+            st.markdown('<div class="btn-bleu">', unsafe_allow_html=True)
             if st.button("💾 Enregistrer les modifications", use_container_width=True, key="btn_edit"):
                 st.session_state.medecins.at[idx, 'Nom'] = new_nom
                 st.session_state.medecins.at[idx, 'Prénom'] = new_prenom
@@ -366,17 +454,20 @@ elif menu == "👨‍⚕️ Gestion des médecins":
                 st.session_state.medecins.at[idx, 'Téléphone'] = new_telephone
                 st.success(f"✅ Médecin {new_nom} {new_prenom} modifié !")
                 st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
         else:
             st.info("Aucun médecin à modifier.")
     
     # ---------- FORMULAIRE SUPPRIMER ----------
     elif action == "supprimer":
+        st.subheader("🗑️ Supprimer un médecin")
         if len(st.session_state.medecins) > 0:
             medecin_options = st.session_state.medecins.apply(
                 lambda x: f"{x['Nom']} {x['Prénom']} (ID: {x['ID']})", axis=1
             ).tolist()
             selected = st.selectbox("Choisir un médecin à supprimer", medecin_options, key="del_select")
             
+            st.markdown('<div class="btn-rouge">', unsafe_allow_html=True)
             if st.button("🗑️ SUPPRIMER", use_container_width=True, key="btn_del"):
                 idx = medecin_options.index(selected)
                 medecin_id = st.session_state.medecins.iloc[idx]['ID']
@@ -385,6 +476,7 @@ elif menu == "👨‍⚕️ Gestion des médecins":
                 ].reset_index(drop=True)
                 st.success("✅ Médecin supprimé !")
                 st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
         else:
             st.info("Aucun médecin à supprimer.")
 
