@@ -14,7 +14,7 @@ st.set_page_config(
 # ==================== STYLE GLOBAL ====================
 st.markdown("""
 <style>
-/* ===== BOUTONS COLORÉS (ciblés par position de colonne) ===== */
+/* ===== BOUTONS COLORÉS (Ajouter/Modifier/Supprimer) ===== */
 div[data-testid="stHorizontalBlock"] > div:nth-child(1) button {
     background-color: #34a853 !important;
     color: white !important;
@@ -86,45 +86,67 @@ div[data-testid="stForm"] button[kind="secondaryFormSubmit"]:hover {
     color: white !important;
 }
 
-/* ===== Labels EN GRAS (TOUS les champs) ===== */
-div[data-testid="stForm"] label,
-div[data-testid="stTextInput"] label,
-div[data-testid="stSelectbox"] label,
-.stTextInput > label,
-.stSelectbox > label,
-.stNumberInput > label,
-.stTextArea > label {
+/* ===== Labels EN GRAS (uniquement dans les formulaires d'auth) ===== */
+div[data-testid="stForm"] label {
     font-weight: bold !important;
     color: #000 !important;
     font-size: 1.05rem !important;
 }
 
-/* ===== NEUTRALISER LES COULEURS DES BOUTONS +/- ET SELECTBOX ===== */
+/* ===== NEUTRALISER LES BOUTONS +/- (gris neutres) ===== */
 button[data-testid="stNumberInputStepDown"],
-button[data-testid="stNumberInputStepUp"] {
+button[data-testid="stNumberInputStepUp"],
+button[data-testid="stNumberInputStepDown"]:focus,
+button[data-testid="stNumberInputStepUp"]:focus,
+button[data-testid="stNumberInputStepDown"]:active,
+button[data-testid="stNumberInputStepUp"]:active {
     background-color: #f0f2f6 !important;
     color: #333 !important;
     border: 1px solid #ccc !important;
+    box-shadow: none !important;
 }
 button[data-testid="stNumberInputStepDown"]:hover,
 button[data-testid="stNumberInputStepUp"]:hover {
     background-color: #e0e2e6 !important;
     color: #333 !important;
+    border: 1px solid #999 !important;
 }
 button[data-testid="stNumberInputStepDown"] svg,
-button[data-testid="stNumberInputStepUp"] svg {
+button[data-testid="stNumberInputStepUp"] svg,
+button[data-testid="stNumberInputStepDown"] svg path,
+button[data-testid="stNumberInputStepUp"] svg path {
     fill: #333 !important;
     color: #333 !important;
+    stroke: #333 !important;
 }
 
-/* Selectbox (chevron) */
-div[data-baseweb="select"] > div {
+/* ===== NEUTRALISER LES SELECTBOX (chevron gris) ===== */
+div[data-baseweb="select"] > div,
+div[data-baseweb="select"] > div:focus,
+div[data-baseweb="select"] > div:focus-within,
+div[data-baseweb="select"] > div:active {
     background-color: #f0f2f6 !important;
     border: 1px solid #ccc !important;
+    box-shadow: none !important;
 }
-div[data-baseweb="select"] svg {
-    fill: #666 !important;
-    color: #666 !important;
+div[data-baseweb="select"] svg,
+div[data-baseweb="select"] svg path {
+    fill: #333 !important;
+    color: #333 !important;
+    stroke: #333 !important;
+}
+button[data-testid="baseButton-headerNoPadding"],
+div[data-baseweb="select"] button {
+    background-color: #f0f2f6 !important;
+    color: #333 !important;
+    border: none !important;
+}
+
+/* ===== Labels SIMPLES pour les number_input (page prédiction) ===== */
+.stNumberInput > label {
+    font-weight: normal !important;
+    color: #000 !important;
+    font-size: 1rem !important;
 }
 
 /* ===== Titres ===== */
@@ -132,23 +154,9 @@ div[data-baseweb="select"] svg {
 .sub-title { color: #34a853; font-size: 1.4rem; font-weight: 600; }
 
 /* ===== Style des pages auth ===== */
-.auth-icon {
-    text-align: center;
-    margin: 30px 0 10px 0;
-    line-height: 1;
-}
-.auth-title {
-    text-align: center;
-    color: #1a73e8;
-    font-size: 2rem;
-    font-weight: bold;
-    margin-bottom: 5px;
-}
-.auth-sub {
-    text-align: center;
-    color: #666;
-    margin-bottom: 30px;
-}
+.auth-icon { text-align: center; margin: 30px 0 10px 0; line-height: 1; }
+.auth-title { text-align: center; color: #1a73e8; font-size: 2rem; font-weight: bold; margin-bottom: 5px; }
+.auth-sub { text-align: center; color: #666; margin-bottom: 30px; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -192,22 +200,20 @@ if 'medecins' not in st.session_state:
         'Téléphone': ['0102030405', '0607080910']
     })
 
-# ==================== 1ère BARRIÈRE : ACCÈS AU SITE (CLÉ ARGENT) ====================
+# ==================== 1ère BARRIÈRE : ACCÈS (CLÉ ARGENT) ====================
 if not st.session_state.access_granted:
     st.markdown('''
     <div class="auth-icon">
     <svg width="100" height="100" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <defs>
             <linearGradient id="silverGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:#F0F0F0;stop-opacity:1" />
-                <stop offset="50%" style="stop-color:#C0C0C0;stop-opacity:1" />
-                <stop offset="100%" style="stop-color:#909090;stop-opacity:1" />
+                <stop offset="0%" style="stop-color:#F0F0F0"/>
+                <stop offset="50%" style="stop-color:#C0C0C0"/>
+                <stop offset="100%" style="stop-color:#909090"/>
             </linearGradient>
         </defs>
         <path d="M12.65 10C11.83 7.67 9.61 6 7 6C3.69 6 1 8.69 1 12C1 15.31 3.69 18 7 18C9.61 18 11.83 16.33 12.65 14H17V17H20V14H21V12H12.65ZM7 15C5.35 15 4 13.65 4 12C4 10.35 5.35 9 7 9C8.65 9 10 10.35 10 12C10 13.65 8.65 15 7 15Z" 
-              fill="url(#silverGrad1)" 
-              stroke="#707070" 
-              stroke-width="0.7"/>
+              fill="url(#silverGrad1)" stroke="#707070" stroke-width="0.7"/>
     </svg>
     </div>
     ''', unsafe_allow_html=True)
@@ -219,7 +225,6 @@ if not st.session_state.access_granted:
         with st.form("access_form"):
             access_code = st.text_input("Mot de passe d'accès", type="password", key="access_pwd")
             submit_access = st.form_submit_button("Accéder à l'application", use_container_width=True)
-        
         if submit_access:
             if access_code == ACCESS_PASSWORD:
                 st.session_state.access_granted = True
@@ -248,7 +253,6 @@ if not st.session_state.authenticated:
             password = st.text_input("Mot de passe", type="password", key="login_pass")
             role = st.selectbox("Rôle", ["Médecin", "Administrateur"], key="login_role")
             submit_login = st.form_submit_button("Se connecter", use_container_width=True)
-        
         if submit_login:
             if username == "medecin" and password == "medecin123" and role == "Médecin":
                 st.session_state.authenticated = True
@@ -267,7 +271,7 @@ st.sidebar.markdown("## ✚ Système Médical")
 st.sidebar.markdown(f"👋 Connecté : **{st.session_state.role}**")
 st.sidebar.markdown("---")
 
-# ==================== MENU SELON LE RÔLE ====================
+# ==================== MENU ====================
 if st.session_state.role == "Médecin":
     menu = st.sidebar.radio("Navigation", ["⚕️ Prédiction", "🤖 Aide à la décision"])
 else:
@@ -280,7 +284,7 @@ else:
         "⚙️ Administration"
     ])
 
-# Déconnexion ROUGE
+# Déconnexion
 st.sidebar.markdown("---")
 if st.sidebar.button("🚪 Déconnexion", use_container_width=True, key="btn_logout"):
     st.session_state.authenticated = False
@@ -291,19 +295,18 @@ if st.sidebar.button("🚪 Déconnexion", use_container_width=True, key="btn_log
 # ==================== PAGE PRÉDICTION ====================
 if menu == "⚕️ Prédiction":
     st.title("⚕️ Prédiction de risque médical")
-    
     st.subheader("Saisie du patient")
-    col1, col2 = st.columns(2)
-    with col1:
-        age = st.number_input("Âge", min_value=0, max_value=120, value=50, step=1)
-        sexe = st.selectbox("Sexe", ["Féminin", "Masculin"])
-        imc = st.number_input("IMC", min_value=10.0, max_value=50.0, value=25.0, step=0.1)
-        tension = st.number_input("Tension (mmHg)", min_value=80, max_value=220, value=130, step=1)
-    with col2:
-        diabete = st.selectbox("Diabète", ["Non", "Oui"])
-        fumeur = st.selectbox("Fumeur", ["Non", "Oui"])
-        hospitalisations = st.number_input("Hospitalisations", min_value=0, max_value=20, value=0, step=1)
-        duree_sejour = st.number_input("Durée séjour", min_value=1, max_value=30, value=5, step=1)
+    
+    age = st.number_input("Âge", min_value=0, max_value=120, value=50, step=1)
+    sexe = st.number_input("Sexe (0 = F, 1 = M)", min_value=0, max_value=1, value=0, step=1)
+    imc = st.number_input("IMC", min_value=10.0, max_value=50.0, value=25.0, step=0.1)
+    tension = st.number_input("Tension", min_value=80, max_value=220, value=130, step=1)
+    diabete = st.number_input("Diabète (0/1)", min_value=0, max_value=1, value=0, step=1)
+    fumeur = st.number_input("Fumeur (0/1)", min_value=0, max_value=1, value=0, step=1)
+    hospitalisations = st.number_input("Hospitalisations", min_value=0, max_value=20, value=0, step=1)
+    duree_sejour = st.number_input("Durée séjour", min_value=1, max_value=30, value=5, step=1)
+    
+    st.markdown("<br>", unsafe_allow_html=True)
     
     if st.button("⚕️ PRÉDIRE LE RISQUE", use_container_width=True, key="btn_predict", type="primary"):
         with st.spinner("🔬 Recherche des patients similaires..."):
@@ -405,11 +408,9 @@ elif menu == "🥼 Gestion des médecins":
     
     st.markdown("---")
     
-    # Initialiser l'action
     if 'medecin_action' not in st.session_state:
         st.session_state.medecin_action = "ajouter"
     
-    # ===== 3 BOUTONS COLORÉS =====
     col1, col2, col3 = st.columns(3)
     with col1:
         if st.button("➕ Ajouter", use_container_width=True, key="tab_add"):
@@ -428,7 +429,6 @@ elif menu == "🥼 Gestion des médecins":
     
     action = st.session_state.medecin_action
     
-    # ---------- FORMULAIRE AJOUTER ----------
     if action == "ajouter":
         st.subheader("➕ Ajouter un médecin")
         col1, col2 = st.columns(2)
@@ -453,7 +453,6 @@ elif menu == "🥼 Gestion des médecins":
             else:
                 st.error("❌ Nom, Prénom et Email sont obligatoires")
     
-    # ---------- FORMULAIRE MODIFIER ----------
     elif action == "modifier":
         st.subheader("✏️ Modifier un médecin")
         if len(st.session_state.medecins) > 0:
@@ -484,7 +483,6 @@ elif menu == "🥼 Gestion des médecins":
         else:
             st.info("Aucun médecin à modifier.")
     
-    # ---------- FORMULAIRE SUPPRIMER ----------
     elif action == "supprimer":
         st.subheader("🗑️ Supprimer un médecin")
         if len(st.session_state.medecins) > 0:
