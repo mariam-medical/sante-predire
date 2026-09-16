@@ -14,46 +14,34 @@ st.set_page_config(
 # ==================== STYLE GLOBAL ====================
 st.markdown("""
 <style>
-/* ===== BOUTONS COLORÉS (ciblés par position de colonne) ===== */
-div[data-testid="column"]:nth-of-type(1) div.stButton > button {
-    background-color: #34a853 !important;
-    color: white !important;
-    border: 2px solid #000 !important;
-    font-weight: bold !important;
-    font-size: 1.05rem !important;
-    padding: 12px !important;
-    border-radius: 6px !important;
+/* ===== BOUTONS HTML COLORÉS (Ajouter/Modifier/Supprimer) ===== */
+.btn-group {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 25px;
 }
-div[data-testid="column"]:nth-of-type(1) div.stButton > button:hover {
-    background-color: #1e7e34 !important;
+.btn-group a {
+    flex: 1;
+    padding: 14px 20px;
+    border-radius: 6px;
+    text-align: center;
+    font-weight: bold;
     color: white !important;
+    text-decoration: none !important;
+    font-size: 1.05rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    border: 2px solid #000;
+    cursor: pointer;
+    display: block;
 }
-div[data-testid="column"]:nth-of-type(2) div.stButton > button {
-    background-color: #1a73e8 !important;
+.btn-group a:hover {
+    opacity: 0.9;
     color: white !important;
-    border: 2px solid #000 !important;
-    font-weight: bold !important;
-    font-size: 1.05rem !important;
-    padding: 12px !important;
-    border-radius: 6px !important;
+    text-decoration: none !important;
 }
-div[data-testid="column"]:nth-of-type(2) div.stButton > button:hover {
-    background-color: #0d47a1 !important;
-    color: white !important;
-}
-div[data-testid="column"]:nth-of-type(3) div.stButton > button {
-    background-color: #d93025 !important;
-    color: white !important;
-    border: 2px solid #000 !important;
-    font-weight: bold !important;
-    font-size: 1.05rem !important;
-    padding: 12px !important;
-    border-radius: 6px !important;
-}
-div[data-testid="column"]:nth-of-type(3) div.stButton > button:hover {
-    background-color: #a50e0e !important;
-    color: white !important;
-}
+.btn-ajouter { background-color: #34a853 !important; }
+.btn-modifier { background-color: #1a73e8 !important; }
+.btn-supprimer { background-color: #d93025 !important; }
 
 /* ===== Bouton Déconnexion en ROUGE (sidebar) ===== */
 section[data-testid="stSidebar"] div.stButton > button {
@@ -127,6 +115,8 @@ if 'access_granted' not in st.session_state:
 if 'authenticated' not in st.session_state:
     st.session_state.authenticated = False
     st.session_state.role = None
+if 'medecin_action' not in st.session_state:
+    st.session_state.medecin_action = "ajouter"
 
 # ==================== DONNÉES SIMULÉES ====================
 if 'patients' not in st.session_state:
@@ -155,6 +145,12 @@ if 'medecins' not in st.session_state:
         'Spécialité': ['Cardiologie', 'Pédiatrie'],
         'Téléphone': ['0102030405', '0607080910']
     })
+
+# ==================== LECTURE DES PARAMÈTRES D'URL ====================
+# Pour que les boutons HTML fonctionnent sans perdre la session
+query_action = st.query_params.get("action", None)
+if query_action:
+    st.session_state.medecin_action = query_action
 
 # ==================== 1ère BARRIÈRE : ACCÈS AU SITE ====================
 if not st.session_state.access_granted:
@@ -259,6 +255,7 @@ if st.sidebar.button("🚪 Déconnexion", use_container_width=True, key="btn_log
     st.session_state.authenticated = False
     st.session_state.access_granted = False
     st.session_state.role = None
+    st.query_params.clear()
     st.rerun()
 
 # ==================== PAGE PRÉDICTION ====================
@@ -378,24 +375,14 @@ elif menu == "👨‍⚕️ Gestion des médecins":
     
     st.markdown("---")
     
-    # Initialiser l'action dans session_state
-    if 'medecin_action' not in st.session_state:
-        st.session_state.medecin_action = "ajouter"
-    
-    # ===== 3 BOUTONS COLORÉS CÔTE À CÔTE =====
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        if st.button("➕ Ajouter", use_container_width=True, key="tab_add"):
-            st.session_state.medecin_action = "ajouter"
-            st.rerun()
-    with col2:
-        if st.button("✏️ Modifier", use_container_width=True, key="tab_edit"):
-            st.session_state.medecin_action = "modifier"
-            st.rerun()
-    with col3:
-        if st.button("🗑️ Supprimer", use_container_width=True, key="tab_del"):
-            st.session_state.medecin_action = "supprimer"
-            st.rerun()
+    # ===== BOUTONS HTML COLORÉS (garantis à 100%) =====
+    st.markdown("""
+    <div class="btn-group">
+        <a href="?action=ajouter" target="_self" class="btn-ajouter">➕ Ajouter</a>
+        <a href="?action=modifier" target="_self" class="btn-modifier">✏️ Modifier</a>
+        <a href="?action=supprimer" target="_self" class="btn-supprimer">🗑️ Supprimer</a>
+    </div>
+    """, unsafe_allow_html=True)
     
     st.markdown("---")
     
