@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 import time
+import datetime
 
 # ==================== CONFIGURATION ====================
 st.set_page_config(
@@ -172,6 +173,8 @@ if 'authenticated' not in st.session_state:
     st.session_state.role = None
 if 'medecin_action' not in st.session_state:
     st.session_state.medecin_action = "ajouter"
+if 'requetes_par_heure' not in st.session_state:
+    st.session_state.requetes_par_heure = {h: 0 for h in range(24)}
 
 # ==================== DONNÉES SIMULÉES ====================
 if 'patients' not in st.session_state:
@@ -316,6 +319,10 @@ if menu == "⚕️ Prédiction":
         with st.spinner("🔬 Recherche des patients similaires..."):
             time.sleep(1)
         
+        # Incrémenter le compteur de requêtes (heure actuelle)
+        heure_actuelle = datetime.datetime.now().hour
+        st.session_state.requetes_par_heure[heure_actuelle] += 1
+        
         st.subheader("📊 Résultats")
         data = {
             "ID": [99, 113, 11, 72, 56],
@@ -390,13 +397,33 @@ elif menu == "📊 Tableau de bord":
         fig.update_layout(showlegend=False, xaxis_tickangle=-30)
         st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
     
+    st.markdown("---")
     st.subheader("📈 Évolution des requêtes par heure")
-    heures = ["00h", "02h", "04h", "06h", "08h", "10h", "12h", "14h", "16h", "18h", "20h", "22h"]
-    valeurs = [5, 3, 2, 1, 8, 15, 22, 30, 25, 20, 12, 8]
+    
+    # Bouton pour simuler une requête (démo)
+    col_a, col_b = st.columns([1, 3])
+    with col_a:
+        if st.button("➕ Simuler une requête", use_container_width=True):
+            heure_actuelle = datetime.datetime.now().hour
+            st.session_state.requetes_par_heure[heure_actuelle] += 1
+            st.rerun()
+    
+    with col_b:
+        total_requetes = sum(st.session_state.requetes_par_heure.values())
+        st.info(f"📊 Total des requêtes : **{total_requetes}**")
+    
+    # Graphique avec les vraies valeurs
+    heures = [f"{h:02d}h" for h in range(24)]
+    valeurs = [st.session_state.requetes_par_heure[h] for h in range(24)]
+    
     df_req = pd.DataFrame({"Heure": heures, "Requêtes": valeurs})
-    fig = px.bar(df_req, x="Heure", y="Requêtes", title="Requêtes par heure",
+    fig = px.bar(df_req, x="Heure", y="Requêtes", title="Requêtes par heure (temps réel)",
                  color="Requêtes", color_continuous_scale="Blues", height=400)
+    fig.update_layout(xaxis_tickangle=-45)
     st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+    
+    if total_requetes == 0:
+        st.warning("⚠️ Aucune requête pour le moment. Clique sur **➕ Simuler une requête** ou fais une prédiction pour tester.")
 
 # ==================== PAGE Q&A RAG ====================
 elif menu == "Aide à la décision":
